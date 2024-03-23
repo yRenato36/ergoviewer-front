@@ -46,7 +46,7 @@ export const MenuContainer = styled("div", {
 });
 
 export const MenuOptions = styled("div", {
-  width: "200px",
+  width: "150px",
 
   display: "flex",
   flexDirection: "column",

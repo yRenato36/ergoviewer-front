@@ -1,5 +1,23 @@
-import { InputContainer } from "./style";
+import { InputContainer, InputComponent, SpanError } from "./style";
 
-export const Input = ({ type, placeholder }) => {
-  return <InputContainer type={type} placeholder={placeholder} />;
+export const Input = ({
+  type,
+  placeholder,
+  value,
+  onChange,
+  onBlur,
+  error,
+}) => {
+  return (
+    <InputContainer>
+      <InputComponent
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onBlur={onBlur}
+        onChange={onChange}
+      />
+      <SpanError>{error && error}</SpanError>
+    </InputContainer>
+  );
 };

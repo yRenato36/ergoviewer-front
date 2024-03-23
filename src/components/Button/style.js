@@ -20,4 +20,13 @@ export const ButtonContainer = styled("button", {
     transition: "0.3s",
     filter: "brightness(0.9)",
   },
+
+  "&:focus": {
+    borderColor: "$darkPrimary",
+  },
+
+  "&:disabled": {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
 });

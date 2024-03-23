@@ -1,6 +1,10 @@
 import { styled } from "../../styles";
 
-export const InputContainer = styled("input", {
+export const InputContainer = styled("div", {
+  width: "100%",
+});
+
+export const InputComponent = styled("input", {
   width: "100%",
   height: "2.8125rem",
 
@@ -12,4 +16,15 @@ export const InputContainer = styled("input", {
   backgroundColor: "$white",
 
   fontSize: "1rem",
+
+  "&:focus": {
+    borderColor: "$darkPrimary",
+  },
+});
+
+export const SpanError = styled("span", {
+  marginTop: "0.25rem",
+  marginLeft: "0.25rem",
+  color: "$red500",
+  fontSize: "0.875rem",
 });

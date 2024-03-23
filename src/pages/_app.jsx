@@ -4,13 +4,17 @@ import { Container } from "@/styles/pages/app";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
+import { UserStorage } from "@/context/UserContext";
+
 globalStyles();
 export default function App({ Component, pageProps }) {
   return (
     <Container>
-      <Header />
-      <Component {...pageProps} />
-      <Footer />
+      <UserStorage>
+        <Header />
+        <Component {...pageProps} />
+        <Footer />
+      </UserStorage>
     </Container>
   );
 }

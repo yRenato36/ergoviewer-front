@@ -1,6 +1,6 @@
 import { styled } from "../../styles";
 
-export const AuthenticationContainer = styled("main", {
+export const RegisterProjectContainer = styled("main", {
   height: "100%",
 
   width: "100%",
@@ -13,7 +13,7 @@ export const AuthenticationContainer = styled("main", {
   justifyContent: "center",
 });
 
-export const AuthenticationSubContainer = styled("div", {
+export const FormContainer = styled("form", {
   width: "21.875rem",
   height: "25rem",
 
@@ -35,18 +35,14 @@ export const AuthenticationSubContainer = styled("div", {
   },
 });
 
-export const PasswordContainer = styled("div", {
+export const ContainerButton = styled("div", {
   width: "100%",
 
-  display: "grid",
-  gridTemplateColumns: "1.4fr 0.6fr",
+  display: "flex",
+  flexDirection: "row",
 
-  input: {
-    width: "100%",
-    borderRadius: "0.5rem 0 0 0.5rem",
-  },
+  alignItems: "center",
+  justifyContent: "space-between",
 
-  button: {
-    borderRadius: "0 0.5rem 0.5rem 0",
-  },
+  gap: "0.625rem",
 });
