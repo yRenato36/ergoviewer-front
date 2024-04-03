@@ -1,4 +1,16 @@
+import { keyframes } from "@stitches/react";
 import { globalCss } from ".";
+
+const animeLeftKeyframes = keyframes({
+  "0%": {
+    opacity: 0,
+    transform: "translateX(-20px)",
+  },
+  "100%": {
+    opacity: 1,
+    transform: "none",
+  },
+});
 
 export const globalStyles = globalCss({
   "*": {
@@ -19,5 +31,11 @@ export const globalStyles = globalCss({
   "body, input, textarea, button": {
     fontFamily: "Roboto",
     fontWeight: 400,
+  },
+
+  ".animeLeft": {
+    opacity: 0,
+    transform: "translateX(-20px)",
+    animation: `${animeLeftKeyframes} 0.5s forwards`,
   },
 });

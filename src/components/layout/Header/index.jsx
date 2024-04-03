@@ -9,7 +9,7 @@ import IconMenu from "../../../assets/icon-menu.svg";
 
 import { UserContext } from "@/context/UserContext";
 
-export default function Header() {
+export default function ComponentHeader() {
   const router = useRouter();
 
   const menuRef = useRef(null);
@@ -58,9 +58,9 @@ export default function Header() {
             />
             {isMenuOpen && (
               <MenuOptions>
-                <a onClick={() => router.push("/projects")}>Projetos</a>
                 <a onClick={() => router.push("/profile")}>Perfil</a>
-                <a onClick={userLogout}>Sair</a>
+                <a onClick={() => router.push("/projects")}>Projetos</a>
+                <a onClick={userLogout}>Desconectar</a>
               </MenuOptions>
             )}
           </MenuContainer>
@@ -89,7 +89,7 @@ export default function Header() {
                 <a onClick={() => router.push("/register-acess-data")}>
                   Cadastre-se
                 </a>
-                <a onClick={() => router.push("/auth")}>Autentique-se</a>
+                <a onClick={() => router.push("/auth")}>Conectar-se</a>
               </MenuOptions>
             )}
           </MenuContainer>

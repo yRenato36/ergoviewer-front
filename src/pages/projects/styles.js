@@ -57,7 +57,7 @@ export const Theader = styled("thead", {
     borderRadius: "0 0.5rem 0 0",
 
     display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr 0.25fr 0.25fr 0.25fr 0.25fr",
+    gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 0.25fr 0.25fr 0.25fr 0.25fr",
 
     gap: "0.25rem",
   },
@@ -91,7 +91,7 @@ export const Trbody = styled("tr", {
   width: "100%",
 
   display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr 0.25fr 0.25fr 0.25fr 0.25fr",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 0.25fr 0.25fr 0.25fr 0.25fr",
 
   gap: "0.25rem",
   alignItems: "center",

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { format } from "date-fns";
 import Image from "next/image";
 
@@ -6,7 +7,6 @@ import {
   ProjectContainer,
   TableContainer,
   Pesquisar,
-  PesquisarSelect,
   Table,
   Tbody,
   Td,
@@ -16,53 +16,23 @@ import {
   SubContainer,
 } from "./styles";
 
+import { UserContext } from "@/context/UserContext";
+import { listUserProjects } from "@/service/firebase";
+
+import { Modal } from "@/components/Modal";
+import { Button } from "@/components/Button";
+
 import IconDonwload from "@/assets/icon-download.svg";
 import IconEdit from "@/assets/icon-edit.svg";
 import IconVisibility from "@/assets/icon-visibility.svg";
 import IconVisibilityOff from "@/assets/icon-visibility-off.svg";
 import IconDelete from "@/assets/icon-delete.svg";
-import { Button } from "@/components/Button";
-
-import { Modal } from "@/components/Modal";
 
 export default function Project() {
-  const projetosMock = [
-    {
-      autor: "John Doe",
-      nome: "Projeto A",
-      data_inicio: "2022-01-01",
-      razao_social: "Empresa XYZ",
-      cnpj: "123.456.789/0001-01",
-      ativo: "true",
-    },
-    {
-      autor: "Jane Doe",
-      nome: "Projeto B",
-      data_inicio: "2022-02-01",
-      razao_social: "Empresa ABC",
-      cnpj: "987.654.321/0001-02",
-      ativo: "false",
-    },
-    {
-      autor: "Bob Johnson",
-      nome: "Projeto C",
-      data_inicio: "2022-03-01",
-      razao_social: "Empresa 123",
-      cnpj: "456.789.012/0001-03",
-      ativo: "true",
-    },
-    {
-      autor: "Alice Smith",
-      nome: "Projeto D",
-      data_inicio: "2022-04-01",
-      razao_social: "Empresa XYZ",
-      cnpj: "111.222.333/0001-04",
-      ativo: "false",
-    },
-  ];
+  const router = useRouter();
+  const [projects, setProjects] = useState([]);
 
-  //Delete
-  const handleDelete = (id) => {};
+  const { data, login } = useContext(UserContext);
 
   // Modal
   const [isOpenDownload, setIsOpenDownload] = useState(false);
@@ -70,14 +40,66 @@ export default function Project() {
   const [isOpenVisibility, setIsOpenVisibility] = useState(false);
   const [isOpenDelete, setIsOpenDelete] = useState(false);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!login) {
+          router.push("/");
+        } else {
+          const userProjects = await listUserProjects(data.uid);
+          setProjects(userProjects);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar os projetos do usuário:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const projetosMock = [
+    {
+      author: "John Doe",
+      name: "Projeto A",
+      created_at: "2022-01-01",
+      social_reason: "Empresa XYZ",
+      cnpj: "123.456.789/0001-01",
+      active: "true",
+    },
+    {
+      author: "Jane Doe",
+      name: "Projeto B",
+      created_at: "2022-02-01",
+      social_reason: "Empresa ABC",
+      cnpj: "987.654.321/0001-02",
+      active: "false",
+    },
+    {
+      author: "Bob Johnson",
+      name: "Projeto C",
+      created_at: "2022-03-01",
+      social_reason: "Empresa 123",
+      cnpj: "456.789.012/0001-03",
+      active: "true",
+    },
+    {
+      author: "Alice Smith",
+      name: "Projeto D",
+      created_at: "2022-04-01",
+      social_reason: "Empresa XYZ",
+      cnpj: "111.222.333/0001-04",
+      active: "false",
+    },
+  ];
+
   // Filtragem de projetos
   const [filter, setFilter] = useState({
-    autor: "",
-    nome: "",
-    data_inicio: "",
-    razao_social: "",
+    author: "",
+    name: "",
+    created_at: "",
+    social_reason: "",
     cnpj: "",
-    ativo: "",
+    active: "",
   });
 
   const handleInputChange = (columnName, value) => {
@@ -92,20 +114,19 @@ export default function Project() {
     handleInputChange(columnName, value);
   };
 
-  const filteredProjetos = projetosMock?.filter((p) => {
+  const filteredProjetos = projects?.filter((p) => {
     return (
-      (filter.autor === "" ||
-        p.autor.toLowerCase().includes(filter.autor.toLowerCase())) &&
-      (filter.nome === "" ||
-        p.nome.toLowerCase().includes(filter.nome.toLowerCase())) &&
-      (filter.data_inicio === "" ||
-        p.data_inicio.includes(filter.data_inicio)) &&
-      (filter.razao_social === "" ||
-        p.razao_social
+      (filter.author === "" ||
+        p.author.toLowerCase().includes(filter.author.toLowerCase())) &&
+      (filter.name === "" ||
+        p.name.toLowerCase().includes(filter.name.toLowerCase())) &&
+      (filter.created_at === "" || p.created_at.includes(filter.created_at)) &&
+      (filter.social_reason === "" ||
+        p.social_reason
           .toLowerCase()
-          .includes(filter.razao_social.toLowerCase())) &&
+          .includes(filter.social_reason.toLowerCase())) &&
       (filter.cnpj === "" || p.cnpj.includes(filter.cnpj)) &&
-      (filter.ativo === "" || p.ativo.toString() === filter.ativo)
+      (filter.active === "" || p.active.toString() === filter.active)
     );
   });
 
@@ -122,40 +143,27 @@ export default function Project() {
   );
 
   return (
-    <ProjectContainer>
+    <ProjectContainer className="animeLeft">
       <TableContainer>
         <Table>
           <caption>Projetos</caption>
           <Theader>
             <tr>
-              {renderPesquisaInput("Autor", "autor", "text", filter.autor)}
-              {renderPesquisaInput("Nome", "nome", "text", filter.nome)}
+              {renderPesquisaInput("Autor", "author", "text", filter.author)}
+              {renderPesquisaInput("Nome", "name", "text", filter.name)}
               {renderPesquisaInput(
                 "Data Início",
-                "data_inicio",
+                "created_at",
                 "text",
-                filter.data_inicio
+                filter.created_at
               )}
               {renderPesquisaInput(
                 "Razão Social",
-                "razao_social",
+                "social_reason",
                 "text",
-                filter.razao_social
+                filter.social_reason
               )}
               {renderPesquisaInput("CNPJ", "cnpj", "text", filter.cnpj)}
-              <Th>
-                <PesquisarSelect
-                  placeholder="Ativo"
-                  name="ativo"
-                  as="select"
-                  value={filter.ativo}
-                  onChange={handleInputValueChange("ativo")}
-                >
-                  <option value="">Todos</option>
-                  <option value="true">Ativo</option>
-                  <option value="false">Inativo</option>
-                </PesquisarSelect>
-              </Th>
               <Th></Th>
               <Th></Th>
               <Th></Th>
@@ -165,16 +173,15 @@ export default function Project() {
           <Tbody>
             {filteredProjetos?.map((p, i) => (
               <Trbody key={i}>
-                <Td>{p.autor}</Td>
-                <Td>{p.nome}</Td>
+                <Td>{p.author}</Td>
+                <Td>{p.name}</Td>
                 <Td>
-                  {p.data_inicio
-                    ? format(new Date(p.data_inicio), "dd/MM/yyyy")
+                  {p.created_at
+                    ? format(new Date(p.created_at), "dd/MM/yyyy")
                     : ""}
                 </Td>
-                <Td>{p.razao_social}</Td>
+                <Td>{p.social_reason}</Td>
                 <Td>{p.cnpj}</Td>
-                <Td>{p.ativo.toString()}</Td>
                 <Td>
                   <Image
                     src={IconDonwload}
@@ -194,7 +201,7 @@ export default function Project() {
                   />
                 </Td>
                 <Td>
-                  {p.ativo === "true" ? (
+                  {p.active === "true" ? (
                     <Image
                       src={IconVisibility}
                       alt="Projeto Visível"
@@ -227,8 +234,12 @@ export default function Project() {
         </Table>
       </TableContainer>
       <SubContainer>
-        <Button type="button" text="Voltar" />
-        <Button type="button" text="Novo Projeto" />
+        <Button type="button" text="Voltar" onClick={() => router.back()} />
+        <Button
+          type="button"
+          text="Novo Projeto"
+          onClick={() => router.push("/register-project")}
+        />
       </SubContainer>
       <Modal
         isOpen={isOpenDownload}

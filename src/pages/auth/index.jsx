@@ -1,16 +1,18 @@
 import { useContext } from "react";
+import { useRouter } from "next/router";
+
 import {
   AuthenticationContainer,
   AuthenticationSubContainer,
   PasswordContainer,
 } from "./styles";
 
-import { Input } from "@/components/Input";
-import { Button } from "@/components/Button";
-
 import { useForm } from "@/hooks/useForm";
 import { UserContext } from "@/context/UserContext";
-import { useRouter } from "next/router";
+
+import { Input } from "@/components/Input";
+import { Error } from "@/components/Error";
+import { Button } from "@/components/Button";
 
 export default function Authentication() {
   const router = useRouter();
@@ -18,10 +20,11 @@ export default function Authentication() {
   const email = useForm("email");
   const password = useForm("password");
 
-  const { login, userLogin } = useContext(UserContext);
+  const { userLogin, error, loading } = useContext(UserContext);
 
   async function handleAuth(event) {
     event.preventDefault();
+
     if (email.validation() && password.validation()) {
       const response = await userLogin(email.value, password.value);
       if (response) {
@@ -31,7 +34,7 @@ export default function Authentication() {
   }
 
   return (
-    <AuthenticationContainer>
+    <AuthenticationContainer className="animeLeft">
       <AuthenticationSubContainer onSubmit={handleAuth}>
         <h1>Entrar</h1>
         <Input type="email" placeholder="Email" {...email} />
@@ -39,8 +42,14 @@ export default function Authentication() {
           <Input type="password" placeholder="Senha" {...password} />
           <Button type="button" text="Esqueceu?" />
         </PasswordContainer>
-        <Button type="submit" text="Entrar" />
-        <Button type="button" text="Cadastre-se" />
+        <Button type="submit" text="Entrar" disabled={loading} />
+        <Button
+          type="button"
+          text="Cadastre-se"
+          disabled={loading}
+          onClick={() => router.push("/register-acess-data")}
+        />
+        {error && <Error error={error} />}
       </AuthenticationSubContainer>
     </AuthenticationContainer>
   );

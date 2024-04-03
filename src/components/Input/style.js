@@ -21,10 +21,3 @@ export const InputComponent = styled("input", {
     borderColor: "$darkPrimary",
   },
 });
-
-export const SpanError = styled("span", {
-  marginTop: "0.25rem",
-  marginLeft: "0.25rem",
-  color: "$red500",
-  fontSize: "0.875rem",
-});

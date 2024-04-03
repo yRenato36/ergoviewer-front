@@ -3,10 +3,24 @@ import { initializeApp } from "firebase/app";
 import {
   getAuth,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+
+import {
+  getFirestore,
+  doc,
+  collection,
+  addDoc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  query,
+  where,
+  collectionGroup,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD0gju_9kZe5vbUMBT15yZVvli0i_Adguc",
@@ -26,20 +40,21 @@ export const signInFirebase = async (email, password) => {
     const response = await signInWithEmailAndPassword(auth, email, password);
     return response;
   } catch (error) {
-    if (error.message.includes("auth/invalid-credential")) {
-      return { error: "Nenhum usuário encontrado" };
-    } else if (error.message.includes("auth/invalid-email")) {
-      return { error: "E-mail inválido" };
-    } else if (error.message.includes("auth/missing-email")) {
-      return { error: "E-mail inválido" };
+    if (
+      error.message.includes("auth/invalid-credential") |
+      error.message.includes("auth/invalid-email") |
+      error.message.includes("auth/missing-email")
+    ) {
+      return { error: "E-mail ou senha inválidos" };
     } else {
+      console.log(error.message);
       return error.message;
     }
   }
 };
 
 export const signOutFirebase = async () => {
-  return auth.signOut();
+  return signOut(auth);
 };
 
 export const getUserFirebase = async () => {
@@ -57,6 +72,8 @@ export const getUserFirebase = async () => {
   });
 };
 
+export const db = getFirestore(firebaseApp);
+
 export const createUserFirebase = async (email, password, userData) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -73,4 +90,94 @@ export const createUserFirebase = async (email, password, userData) => {
   }
 };
 
-export const db = getFirestore(firebaseApp);
+export const getUserDataFromFirestore = async (uid) => {
+  const docRef = doc(db, "users", uid);
+  const docSnap = await getDoc(docRef);
+  return docSnap.data();
+};
+
+export const updateUserDataInFirestore = async (uid, userData) => {
+  try {
+    const docRef = doc(db, "users", uid);
+    await updateDoc(docRef, userData);
+  } catch (error) {
+    console.error("Erro ao atualizar dados:", error);
+  }
+};
+
+export const createProjectFirebase = async (uid, projectData) => {
+  try {
+    const projectsCollectionRef = collection(db, "users", uid, "projects");
+    const projectDocRef = await addDoc(projectsCollectionRef, projectData);
+
+    const userDocRef = doc(db, "users", uid);
+    await updateDoc(userDocRef, {
+      projects: FieldValue.arrayUnion(projectDocRef),
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao adicionar projeto ao usuário:", error);
+    return false;
+  }
+};
+
+export const searchProjectsWithFilters = async (razaoSocial, cnpj) => {
+  let listProjects = [];
+  try {
+    const projectsRef = collectionGroup(db, "projects");
+
+    let consulta = projectsRef;
+
+    if (razaoSocial) {
+      const razaoSocialQuery = `${razaoSocial}%`;
+      consulta = query(
+        consulta,
+        where("social_reason", ">=", razaoSocialQuery)
+      );
+    }
+
+    if (cnpj) {
+      const cnpjQuery = `${cnpj}%`;
+      consulta = query(consulta, where("cnpj", ">=", cnpjQuery));
+    }
+
+    const projectsSnapshot = await getDocs(consulta);
+
+    listProjects = listProjects.concat(
+      projectsSnapshot.docs.map((project) => {
+        return {
+          id: project.id,
+          ...project.data(),
+        };
+      })
+    );
+
+    return listProjects;
+  } catch (error) {
+    console.error("Erro ao listar os projects:", error);
+    return [];
+  }
+};
+
+export const listUserProjects = async (uid) => {
+  let listProjects = [];
+  try {
+    const projectsCollectionRef = collection(db, "users", uid, "projects");
+    const projectsSnapshot = await getDocs(projectsCollectionRef);
+
+    listProjects = listProjects.concat(
+      projectsSnapshot.docs.map((project) => {
+        return {
+          id: project.id,
+          ...project.data(),
+        };
+      })
+    );
+
+    return listProjects;
+  } catch (error) {
+    console.error("Erro ao listar os projects:", error);
+    return [];
+  }
+};

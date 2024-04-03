@@ -65,6 +65,8 @@ export const MenuOptions = styled("div", {
   borderRadius: "0.25rem",
   backgroundColor: "$white",
 
+  zIndex: "10",
+
   a: {
     cursor: "pointer",
     padding: "0.25rem",

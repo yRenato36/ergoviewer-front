@@ -10,6 +10,18 @@ const types = {
     regex: /^.{6,}$/,
     message: "A senha deve conter pelo menos 6 caracteres",
   },
+  cep: {
+    regex: /^\d{5}\d{3}$/,
+    message: "Por favor, insira um CEP válido no formato 12345678.",
+  },
+  number: {
+    regex: /^[0-9]*$/,
+    message: "Por favor, insira apenas números.",
+  },
+  cnpj: {
+    regex: /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/,
+    message: "Por favor, insira um CNPJ válido no formato 00.000.000/0000-00.",
+  },
 };
 
 export const useForm = (type) => {
@@ -36,6 +48,7 @@ export const useForm = (type) => {
   return {
     error,
     value,
+    setValue,
     onChange,
     validation: () => validation(value),
     onBlur: () => validation(value),

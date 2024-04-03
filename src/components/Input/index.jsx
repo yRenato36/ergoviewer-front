@@ -1,4 +1,5 @@
-import { InputContainer, InputComponent, SpanError } from "./style";
+import { InputContainer, InputComponent } from "./style";
+import { Error } from "../Error";
 
 export const Input = ({
   type,
@@ -17,7 +18,7 @@ export const Input = ({
         onBlur={onBlur}
         onChange={onChange}
       />
-      <SpanError>{error && error}</SpanError>
+      {error && <Error error={error} />}
     </InputContainer>
   );
 };
