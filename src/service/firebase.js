@@ -17,10 +17,13 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   collectionGroup,
 } from "firebase/firestore";
+
+import { ref, getStorage, uploadBytes } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD0gju_9kZe5vbUMBT15yZVvli0i_Adguc",
@@ -179,5 +182,105 @@ export const listUserProjects = async (uid) => {
   } catch (error) {
     console.error("Erro ao listar os projects:", error);
     return [];
+  }
+};
+
+export const getProjectById = async (uid, projectId) => {
+  try {
+    const projectDocRef = doc(db, "users", uid, "projects", projectId);
+    const projectDocSnapshot = await getDoc(projectDocRef);
+
+    if (projectDocSnapshot.exists()) {
+      return {
+        id: projectDocSnapshot.id,
+        ...projectDocSnapshot.data(),
+      };
+    } else {
+      console.error("Projeto não encontrado.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Erro ao buscar projeto:", error);
+    return null;
+  }
+};
+
+export const toggleProjectActiveStatus = async (uid, projectId) => {
+  try {
+    const projectDocRef = doc(db, "users", uid, "projects", projectId);
+    const projectDocSnapshot = await getDoc(projectDocRef);
+
+    if (projectDocSnapshot.exists()) {
+      const { active } = projectDocSnapshot.data();
+      await updateDoc(projectDocRef, { active: !active });
+      return true;
+    } else {
+      console.error("Projeto não encontrado");
+      return false;
+    }
+  } catch (error) {
+    console.error("Erro ao atualizar o status do projeto:", error);
+    return false;
+  }
+};
+
+export const updateProjectFirebase = async (
+  uid,
+  projectId,
+  updatedProjectData
+) => {
+  try {
+    const projectDocRef = doc(db, "users", uid, "projects", projectId);
+    await updateDoc(projectDocRef, updatedProjectData);
+    return true;
+  } catch (error) {
+    console.error("Erro ao atualizar projeto:", error);
+    return false;
+  }
+};
+
+export const deleteProjectFirebase = async (uid, projectId) => {
+  try {
+    const projectDocRef = doc(db, "users", uid, "projects", projectId);
+    await deleteDoc(projectDocRef);
+
+    const userDocRef = doc(db, "users", uid);
+    await updateDoc(userDocRef, {
+      projects: FieldValue.arrayRemove(projectDocRef),
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao excluir projeto:", error);
+    return false;
+  }
+};
+
+export const updateProjectContent = async (uid, projectId, newContent) => {
+  try {
+    const projectDocRef = doc(db, "users", uid, "projects", projectId);
+
+    await updateDoc(projectDocRef, {
+      content: newContent,
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao atualizar conteúdo do projeto:", error);
+    return false;
+  }
+};
+
+export const uploadPdfToStorage = async (projectId, pdfFile) => {
+  const storage = getStorage();
+  const storageRef = ref(storage, `projects/${projectId}/file.pdf`);
+
+  try {
+    await uploadBytes(storageRef, pdfFile);
+    console.log("Arquivo PDF enviado com sucesso.");
+    return true;
+  } catch (error) {
+    console.error("Erro ao enviar arquivo PDF:", error);
+    return false;
   }
 };

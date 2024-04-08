@@ -1,22 +1,31 @@
 import { Editor } from "@tinymce/tinymce-react";
-import { CreateDocumentContainer } from "./style";
+import { DocumentContainer, DocumentSubContainer } from "./style";
 import { Button } from "@/components/Button";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { updateProjectContent } from "@/service/firebase";
+import { UserContext } from "@/context/UserContext";
 
 export default function CreateDocument() {
   const router = useRouter();
+  const { id: project_id } = router.query;
 
-  const [content, setContent] = useState("");
+  const { data } = useContext(UserContext);
+
+  const [content, setContent] = useState();
   const [loading, setLoading] = useState(false);
 
-  const handleEditorChange = (newContent) => {
-    console.log("Content was updated: ", newContent);
-    setContent(newContent);
+  const handleClickSaveContent = () => {
+    setLoading(true);
+    if (content) {
+      const saved = updateProjectContent(data.uid, project_id, content);
+      if (saved) alert("Projeto Salvo!");
+    }
+    setLoading(false);
   };
 
   return (
-    <CreateDocumentContainer>
+    <DocumentContainer>
       <Editor
         style={{ maxHeight: "680px" }}
         apiKey="rze5ssngf1fn1ir9eirf4b98zfa7sr9t948ec8lgl6johlr7"
@@ -40,9 +49,11 @@ export default function CreateDocument() {
           Hello, World!
         `}
         value={content}
-        onEditorChange={handleEditorChange}
+        onEditorChange={(newContent) => {
+          setContent(newContent);
+        }}
       />
-      <>
+      <DocumentSubContainer>
         <Button
           type="button"
           text="Voltar"
@@ -51,8 +62,16 @@ export default function CreateDocument() {
             router.back();
           }}
         />
-        <Button type="submit" disabled={loading} text="Atualizar" />
-      </>
-    </CreateDocumentContainer>
+        <Button type="button" disabled={loading} text="Carregar arquivo" />
+        <Button type="button" disabled={loading} text="Download do arquivo" />
+        <Button type="button" disabled={loading} text="Salvar arquivo PDF" />
+        <Button
+          type="button"
+          disabled={loading}
+          text="Salvar conteúdo"
+          onClick={handleClickSaveContent}
+        />
+      </DocumentSubContainer>
+    </DocumentContainer>
   );
 }

@@ -25,7 +25,6 @@ import IconLogo from "../../assets/icon-logo.png";
 export default function Profile() {
   const router = useRouter();
 
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [userData, setUserData] = useState(null);

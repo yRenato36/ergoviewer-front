@@ -47,6 +47,7 @@ export const useForm = (type) => {
 
   return {
     error,
+    setError,
     value,
     setValue,
     onChange,

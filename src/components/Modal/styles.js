@@ -33,9 +33,9 @@ export const ModalContent = styled("form", {
 
   backgroundColor: "$white",
 
-  gap: "0.625rem",
+  gap: "0.25rem",
 
-  div: {
+  "> div": {
     width: "100%",
 
     display: "flex",
@@ -71,5 +71,40 @@ export const ModalContent = styled("form", {
     "&:focus": {
       borderColor: "$darkPrimary",
     },
+  },
+
+  h3: {
+    width: "100%",
+    textAlign: "left",
+
+    fontSize: "1rem",
+    fontWeight: 500,
+  },
+
+  span: {
+    width: "100%",
+    textAlign: "center",
+
+    padding: "0.5rem",
+    border: "1px solid $color04",
+    borderRadius: "0.5rem",
+
+    fontSize: "0.875rem",
+    fontWeight: 400,
+  },
+
+  overflowY: "scroll",
+
+  "&::-webkit-scrollbar": {
+    width: "8px",
+  },
+
+  "&::-webkit-scrollbar-thumb": {
+    backgroundColor: "$color04",
+    borderRadius: "4px",
+  },
+
+  "&::-webkit-scrollbar-thumb:hover": {
+    backgroundColor: "$color05",
   },
 });

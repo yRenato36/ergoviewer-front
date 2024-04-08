@@ -124,28 +124,11 @@ export const Td = styled("td", {
   },
 });
 
-export const Pesquisar = styled("input", {
+export const Filter = styled("input", {
   width: "100%",
   height: "40px",
 
   padding: "10px",
-  border: "1px solid #bdc3c7",
-  borderRadius: "4px",
-
-  transition: "border-color 0.3s ease",
-  "&:focus": {
-    outline: "none",
-    borderColor: "#3498db",
-  },
-});
-
-export const PesquisarSelect = styled("select", {
-  width: "80%",
-  height: "40px",
-
-  padding: "10px",
-  marginRight: "30px",
-
   border: "1px solid #bdc3c7",
   borderRadius: "4px",
 

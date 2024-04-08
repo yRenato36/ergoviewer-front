@@ -15,6 +15,7 @@ import { createProjectFirebase } from "@/service/firebase";
 import { Modal } from "@/components/Modal";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { Textarea } from "@/components/Textarea";
 
 export default function RegisterProject() {
   const router = useRouter();
@@ -27,10 +28,11 @@ export default function RegisterProject() {
   const [isOpenErro, setIsOpenErro] = useState(false);
 
   const name = useForm("");
-  const description = useForm("");
+  const description = useForm(false);
   const social_reason = useForm("");
   const cnpj = useForm("cnpj");
   const author = useForm("");
+  const access_password = useForm("");
 
   // async function handleOnBlurCNPJ() {
   // setLoading(true);
@@ -89,10 +91,15 @@ export default function RegisterProject() {
       <FormContainer onSubmit={onSubmit}>
         <h1>Novo Projeto</h1>
         <Input type="text" placeholder="Nome" {...name} />
-        <Input type="text" placeholder="Descrição" {...description} />
+        <Textarea type="text" placeholder="Descrição" {...description} />
         <Input type="text" placeholder="Razão Social" {...social_reason} />
         <Input type="text" placeholder="CNPJ (00.000.000/0001-00)" {...cnpj} />
         <Input type="text" placeholder="Autor" {...author} />
+        <Input
+          type="password"
+          placeholder="Senha de Acesso"
+          {...access_password}
+        />
         <ContainerButton>
           <Button
             type="button"

@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   ProjectContainer,
   TableContainer,
-  Pesquisar,
+  Filter,
   Table,
   Tbody,
   Td,
@@ -17,9 +17,18 @@ import {
 } from "./styles";
 
 import { UserContext } from "@/context/UserContext";
-import { listUserProjects } from "@/service/firebase";
+import {
+  deleteProjectFirebase,
+  getUserDataFromFirestore,
+  listUserProjects,
+  toggleProjectActiveStatus,
+} from "@/service/firebase";
+
+import { useForm } from "@/hooks/useForm";
+import { useProjectFilter } from "@/hooks/useProjectFilter";
 
 import { Modal } from "@/components/Modal";
+import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 
 import IconDonwload from "@/assets/icon-download.svg";
@@ -30,117 +39,89 @@ import IconDelete from "@/assets/icon-delete.svg";
 
 export default function Project() {
   const router = useRouter();
+
+  const [user, setUser] = useState({});
+  const [project, setProject] = useState({});
   const [projects, setProjects] = useState([]);
+
+  const [edit, setEdit] = useState("");
 
   const { data, login } = useContext(UserContext);
 
-  // Modal
+  const admin_password = useForm("number");
+
   const [isOpenDownload, setIsOpenDownload] = useState(false);
   const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [isOpenVisibility, setIsOpenVisibility] = useState(false);
   const [isOpenDelete, setIsOpenDelete] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!login) {
-          router.push("/");
-        } else {
-          const userProjects = await listUserProjects(data.uid);
-          setProjects(userProjects);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar os projetos do usuário:", error);
+  const fetchData = async () => {
+    try {
+      if (!login) {
+        router.push("/");
+      } else {
+        const userData = await getUserDataFromFirestore(data.uid);
+        setUser(userData);
+        const userProjects = await listUserProjects(data.uid);
+        setProjects(userProjects);
       }
-    };
+    } catch (error) {
+      console.error("Erro ao carregar os projetos do usuário:", error);
+    }
+  };
 
-    fetchData();
-  }, []);
-
-  const projetosMock = [
-    {
-      author: "John Doe",
-      name: "Projeto A",
-      created_at: "2022-01-01",
-      social_reason: "Empresa XYZ",
-      cnpj: "123.456.789/0001-01",
-      active: "true",
-    },
-    {
-      author: "Jane Doe",
-      name: "Projeto B",
-      created_at: "2022-02-01",
-      social_reason: "Empresa ABC",
-      cnpj: "987.654.321/0001-02",
-      active: "false",
-    },
-    {
-      author: "Bob Johnson",
-      name: "Projeto C",
-      created_at: "2022-03-01",
-      social_reason: "Empresa 123",
-      cnpj: "456.789.012/0001-03",
-      active: "true",
-    },
-    {
-      author: "Alice Smith",
-      name: "Projeto D",
-      created_at: "2022-04-01",
-      social_reason: "Empresa XYZ",
-      cnpj: "111.222.333/0001-04",
-      active: "false",
-    },
-  ];
-
-  // Filtragem de projetos
-  const [filter, setFilter] = useState({
+  const initialFilter = {
     author: "",
     name: "",
     created_at: "",
     social_reason: "",
     cnpj: "",
     active: "",
-  });
-
-  const handleInputChange = (columnName, value) => {
-    setFilter((prevFilter) => ({
-      ...prevFilter,
-      [columnName]: value,
-    }));
   };
 
-  const handleInputValueChange = (columnName) => (e) => {
-    const { value } = e.target;
-    handleInputChange(columnName, value);
-  };
+  // prettier-ignore
+  const { filter, handleInputValueChange, filterProjects } = useProjectFilter(initialFilter,projects);
+  const filteredProjects = filterProjects(projects);
 
-  const filteredProjetos = projects?.filter((p) => {
-    return (
-      (filter.author === "" ||
-        p.author.toLowerCase().includes(filter.author.toLowerCase())) &&
-      (filter.name === "" ||
-        p.name.toLowerCase().includes(filter.name.toLowerCase())) &&
-      (filter.created_at === "" || p.created_at.includes(filter.created_at)) &&
-      (filter.social_reason === "" ||
-        p.social_reason
-          .toLowerCase()
-          .includes(filter.social_reason.toLowerCase())) &&
-      (filter.cnpj === "" || p.cnpj.includes(filter.cnpj)) &&
-      (filter.active === "" || p.active.toString() === filter.active)
-    );
-  });
+  async function handleEditClick(project) {
+    if (edit) {
+      if (edit === "info") {
+        router.push(`/edit-project/${project.id}`);
+      } else if (edit === "content") {
+        router.push(`/document/${project.id}`);
+      }
+    }
+  }
 
-  const renderPesquisaInput = (placeholder, name, type, value) => (
-    <Th>
-      <Pesquisar
-        placeholder={placeholder}
-        name={name}
-        type={type}
-        value={value}
-        onChange={handleInputValueChange(name)}
-      />
-    </Th>
-  );
+  async function handleVisibilityClick(project) {
+    if (data && user && admin_password.validation()) {
+      const autorization = admin_password.value === user.admin_password;
+      if (!autorization) {
+        admin_password.setError("Senha inválida");
+      } else if (project) {
+        const change = await toggleProjectActiveStatus(data.uid, project.id);
+        admin_password.setValue("");
+        if (change) fetchData();
+      }
+    }
+  }
+
+  async function handleDeleteClick(project) {
+    if (data && user && admin_password.validation()) {
+      const autorization = admin_password.value === user.admin_password;
+      if (!autorization) {
+        admin_password.setError("Senha inválida");
+      } else if (project) {
+        const deleted = await deleteProjectFirebase(data.uid, project.id);
+        admin_password.setValue("");
+        if (deleted) fetchData();
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <ProjectContainer className="animeLeft">
@@ -149,21 +130,51 @@ export default function Project() {
           <caption>Projetos</caption>
           <Theader>
             <tr>
-              {renderPesquisaInput("Autor", "author", "text", filter.author)}
-              {renderPesquisaInput("Nome", "name", "text", filter.name)}
-              {renderPesquisaInput(
-                "Data Início",
-                "created_at",
-                "text",
-                filter.created_at
-              )}
-              {renderPesquisaInput(
-                "Razão Social",
-                "social_reason",
-                "text",
-                filter.social_reason
-              )}
-              {renderPesquisaInput("CNPJ", "cnpj", "text", filter.cnpj)}
+              <th>
+                <Filter
+                  placeholder="Autor"
+                  name="author"
+                  type="text"
+                  value={filter.author}
+                  onChange={handleInputValueChange("author")}
+                />
+              </th>
+              <th>
+                <Filter
+                  placeholder="Nome"
+                  name="name"
+                  type="text"
+                  value={filter.name}
+                  onChange={handleInputValueChange("name")}
+                />
+              </th>
+              <th>
+                <Filter
+                  placeholder="Data Início"
+                  name="created_at"
+                  type="text"
+                  value={filter.created_at}
+                  onChange={handleInputValueChange("created_at")}
+                />
+              </th>
+              <th>
+                <Filter
+                  placeholder="Razão Social"
+                  name="social_reason"
+                  type="text"
+                  value={filter.social_reason}
+                  onChange={handleInputValueChange("social_reason")}
+                />
+              </th>
+              <th>
+                <Filter
+                  placeholder="CNPJ"
+                  name="cnpj"
+                  type="text"
+                  value={filter.cnpj}
+                  onChange={handleInputValueChange("cnpj")}
+                />
+              </th>
               <Th></Th>
               <Th></Th>
               <Th></Th>
@@ -171,7 +182,7 @@ export default function Project() {
             </tr>
           </Theader>
           <Tbody>
-            {filteredProjetos?.map((p, i) => (
+            {filteredProjects?.map((p, i) => (
               <Trbody key={i}>
                 <Td>{p.author}</Td>
                 <Td>{p.name}</Td>
@@ -186,7 +197,9 @@ export default function Project() {
                   <Image
                     src={IconDonwload}
                     alt="Download Projeto"
+                    title="Download Projeto"
                     onClick={() => {
+                      setProject(p);
                       setIsOpenDownload(!isOpenDownload);
                     }}
                   />
@@ -195,17 +208,21 @@ export default function Project() {
                   <Image
                     src={IconEdit}
                     alt="Editar Projeto"
+                    title="Editar Projeto"
                     onClick={() => {
+                      setProject(p);
                       setIsOpenEdit(!isOpenEdit);
                     }}
                   />
                 </Td>
                 <Td>
-                  {p.active === "true" ? (
+                  {p.active === true ? (
                     <Image
                       src={IconVisibility}
                       alt="Projeto Visível"
+                      title="Projeto Visível"
                       onClick={() => {
+                        setProject(p);
                         setIsOpenVisibility(!isOpenVisibility);
                       }}
                     />
@@ -213,7 +230,9 @@ export default function Project() {
                     <Image
                       src={IconVisibilityOff}
                       alt="Projeto não Visível"
+                      title="Projeto não Visível"
                       onClick={() => {
+                        setProject(p);
                         setIsOpenVisibility(!isOpenVisibility);
                       }}
                     />
@@ -223,7 +242,9 @@ export default function Project() {
                   <Image
                     src={IconDelete}
                     alt="Deletar Projeto"
+                    title="Deletar Projeto"
                     onClick={() => {
+                      setProject(p);
                       setIsOpenDelete(!isOpenDelete);
                     }}
                   />
@@ -244,42 +265,101 @@ export default function Project() {
       <Modal
         isOpen={isOpenDownload}
         onClose={() => {
+          console.log(project);
           setIsOpenDownload(!isOpenDownload);
         }}
-        onSubmit={() => {}}
+        onSubmit={() => {
+          setIsOpenDownload(!isOpenDownload);
+        }}
       >
         <h1>Download Projeto</h1>
-        <p>Tem certeza que deseja fazer o download deste projeto?</p>
+        {project.content ? (
+          <>
+            <p>Tem certeza que deseja baixar este projeto?</p>
+            <button type="submit">Download</button>
+          </>
+        ) : (
+          <p>O projeto não possui conteúdo.</p>
+        )}
       </Modal>
       <Modal
         isOpen={isOpenEdit}
         onClose={() => {
+          console.log(project);
           setIsOpenEdit(!isOpenEdit);
         }}
-        onSubmit={() => {}}
+        onSubmit={() => {
+          handleEditClick(project);
+          setIsOpenEdit(!isOpenEdit);
+        }}
       >
-        <h1>Editar Projeto</h1>
-        <p>Tem certeza que deseja editar este projeto?</p>
+        <h1>Informações do Projeto</h1>
+        <h3>Nome</h3>
+        <span>{project.name}</span>
+        <h3>Descrição</h3>
+        <span>{project.description}</span>
+        <h3>Razão Social</h3>
+        <span>{project.social_reason}</span>
+        <h3>CNPJ</h3>
+        <span>{project.cnpj}</span>
+        <h3>Data Início</h3>
+        <span>{project.created_at}</span>
+        <h3>Autor</h3>
+        <span>{project.author}</span>
+        <button type="submit" onClick={() => setEdit("info")}>
+          Editar Informações
+        </button>
+        <button type="submit" onClick={() => setEdit("content")}>
+          Criar/Editar Contéudo
+        </button>
       </Modal>
       <Modal
         isOpen={isOpenVisibility}
         onClose={() => {
+          console.log(project);
           setIsOpenVisibility(!isOpenVisibility);
         }}
-        onSubmit={() => {}}
+        onSubmit={() => {
+          handleVisibilityClick(project);
+          setIsOpenVisibility(!isOpenVisibility);
+        }}
       >
         <h1>Visibilidade do Projeto</h1>
         <p>Tem certeza que deseja alterar a visibilidade deste projeto?</p>
+        <div>
+          <Input
+            type="password"
+            placeholder="Senha de Admin"
+            {...admin_password}
+          />
+        </div>
+        {project.active === true ? (
+          <button type="submit">Desativar</button>
+        ) : (
+          <button type="submit">Ativar</button>
+        )}
       </Modal>
       <Modal
         isOpen={isOpenDelete}
         onClose={() => {
+          console.log(project);
           setIsOpenDelete(!isOpenDelete);
         }}
-        onSubmit={() => {}}
+        onSubmit={() => {
+          handleDeleteClick(project);
+          setIsOpenDelete(!isOpenDelete);
+        }}
       >
         <h1>Deletar Projeto</h1>
         <p>Tem certeza que deseja deletar este projeto?</p>
+        <div>
+          <Input
+            type="password"
+            placeholder="Senha de Admin"
+            {...admin_password}
+          />
+        </div>
+        <button type="submit">Deletar</button>
       </Modal>
     </ProjectContainer>
   );
