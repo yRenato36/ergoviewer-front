@@ -19,6 +19,7 @@ import {
 import { UserContext } from "@/context/UserContext";
 import {
   deleteProjectFirebase,
+  downloadPdfFromStorage,
   getUserDataFromFirestore,
   listUserProjects,
   toggleProjectActiveStatus,
@@ -82,6 +83,37 @@ export default function Project() {
   // prettier-ignore
   const { filter, handleInputValueChange, filterProjects } = useProjectFilter(initialFilter,projects);
   const filteredProjects = filterProjects(projects);
+
+  // async function handleDownloadClick(project) {
+  //   if (project) {
+  //     try {
+  //       // Faz a solicitação para o endpoint do servidor
+  //       const response = await fetch(
+  //         `http://localhost:5000/download-pdf/${project.id}`
+  //       );
+  //       if (!response.ok) {
+  //         throw new Error("Erro ao baixar o arquivo PDF.");
+  //       }
+
+  //       // Converte a resposta para um Blob
+  //       const blob = await response.blob();
+
+  //       // Cria um objeto URL para o Blob
+  //       const blobURL = URL.createObjectURL(blob);
+
+  //       // Cria um link de download
+  //       const link = document.createElement("a");
+  //       link.href = blobURL;
+  //       link.download = `project_${project.id}_file.pdf`; // Nome do arquivo para download
+  //       link.click();
+
+  //       // Limpa o objeto URL após o download
+  //       URL.revokeObjectURL(blobURL);
+  //     } catch (error) {
+  //       console.error("Erro ao baixar o arquivo PDF:", error);
+  //     }
+  //   }
+  // }
 
   async function handleEditClick(project) {
     if (edit) {
@@ -186,11 +218,7 @@ export default function Project() {
               <Trbody key={i}>
                 <Td>{p.author}</Td>
                 <Td>{p.name}</Td>
-                <Td>
-                  {p.created_at
-                    ? format(new Date(p.created_at), "dd/MM/yyyy")
-                    : ""}
-                </Td>
+                <Td>{p.created_at}</Td>
                 <Td>{p.social_reason}</Td>
                 <Td>{p.cnpj}</Td>
                 <Td>
@@ -265,10 +293,10 @@ export default function Project() {
       <Modal
         isOpen={isOpenDownload}
         onClose={() => {
-          console.log(project);
           setIsOpenDownload(!isOpenDownload);
         }}
         onSubmit={() => {
+          // handleDownloadClick(project);
           setIsOpenDownload(!isOpenDownload);
         }}
       >
@@ -285,7 +313,6 @@ export default function Project() {
       <Modal
         isOpen={isOpenEdit}
         onClose={() => {
-          console.log(project);
           setIsOpenEdit(!isOpenEdit);
         }}
         onSubmit={() => {
@@ -316,7 +343,6 @@ export default function Project() {
       <Modal
         isOpen={isOpenVisibility}
         onClose={() => {
-          console.log(project);
           setIsOpenVisibility(!isOpenVisibility);
         }}
         onSubmit={() => {
@@ -342,7 +368,6 @@ export default function Project() {
       <Modal
         isOpen={isOpenDelete}
         onClose={() => {
-          console.log(project);
           setIsOpenDelete(!isOpenDelete);
         }}
         onSubmit={() => {

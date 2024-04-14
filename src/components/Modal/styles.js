@@ -15,10 +15,12 @@ export const ModalWrapper = styled("div", {
   alignItems: "center",
 
   background: "rgba(0, 0, 0, 0.5)",
+
+  zIndex: 100,
 });
 
 export const ModalContent = styled("form", {
-  width: "25rem",
+  width: "37.5rem",
 
   display: "flex",
   flexDirection: "column",

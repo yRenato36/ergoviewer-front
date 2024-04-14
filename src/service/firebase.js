@@ -23,7 +23,7 @@ import {
   collectionGroup,
 } from "firebase/firestore";
 
-import { ref, getStorage, uploadBytes } from "firebase/storage";
+import { ref, getStorage, getDownloadURL, uploadBytes } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD0gju_9kZe5vbUMBT15yZVvli0i_Adguc",
@@ -50,7 +50,6 @@ export const signInFirebase = async (email, password) => {
     ) {
       return { error: "E-mail ou senha inválidos" };
     } else {
-      console.log(error.message);
       return error.message;
     }
   }
@@ -274,13 +273,30 @@ export const updateProjectContent = async (uid, projectId, newContent) => {
 export const uploadPdfToStorage = async (projectId, pdfFile) => {
   const storage = getStorage();
   const storageRef = ref(storage, `projects/${projectId}/file.pdf`);
-
   try {
+    await getDownloadURL(storageRef);
     await uploadBytes(storageRef, pdfFile);
-    console.log("Arquivo PDF enviado com sucesso.");
     return true;
   } catch (error) {
-    console.error("Erro ao enviar arquivo PDF:", error);
-    return false;
+    if (error.code === "storage/object-not-found") {
+      await uploadBytes(storageRef, pdfFile);
+      return true;
+    } else {
+      console.error("Erro ao enviar arquivo PDF:", error);
+      return false;
+    }
+  }
+};
+
+export const downloadPdfFromStorage = async (projectId) => {
+  const storage = getStorage();
+  const storageRef = ref(storage, `projects/${projectId}/file.pdf`);
+
+  try {
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  } catch (error) {
+    console.error("Erro ao obter URL de download do arquivo PDF:", error);
+    return null;
   }
 };

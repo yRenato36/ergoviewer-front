@@ -94,6 +94,7 @@ export default function Profile() {
   return (
     <ProfileContainer className="animeLeft">
       <FormContainer onSubmit={handleSubmit}>
+        <h1>Editar Informações do Projeto</h1>
         <ProfileSubContainer>
           <lable>Nome</lable>
           <Input type="text" {...name} />
