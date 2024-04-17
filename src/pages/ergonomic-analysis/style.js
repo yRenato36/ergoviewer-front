@@ -10,17 +10,24 @@ export const ErgonomicAnalysisContainer = styled("main", {
   flexDirection: "column",
 
   alignItems: "center",
+  justifyContent: "space-around",
+
+  gap: "0.5rem",
+
+  padding: "1.25rem 0",
+});
+
+export const ErgonomicAnalysisSubContainer = styled("div", {
+  width: "100%",
+  maxWidth: "1180px",
+
+  display: "flex",
+  flexDirection: "row",
+
+  alignItems: "center",
   justifyContent: "center",
 
   gap: "1.25rem",
 });
 
-export const ErgonomicAnalysisSubContainer = styled("div", {});
-
-export const StyledVideo = styled("video", {
-  // Adicione estilos aqui
-  maxWidth: "100%",
-  width: "100%",
-  height: "auto", // Isso garante que o vídeo mantenha sua proporção de aspecto original
-  borderRadius: "8px", // Adicione bordas arredondadas, se desejar
-});
+export const StyledVideo = styled("video", {});

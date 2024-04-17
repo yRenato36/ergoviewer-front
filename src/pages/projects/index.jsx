@@ -80,40 +80,37 @@ export default function Project() {
     active: "",
   };
 
-  // prettier-ignore
-  const { filter, handleInputValueChange, filterProjects } = useProjectFilter(initialFilter,projects);
+  const { filter, handleInputValueChange, filterProjects } = useProjectFilter(
+    initialFilter,
+    projects
+  );
   const filteredProjects = filterProjects(projects);
 
-  // async function handleDownloadClick(project) {
-  //   if (project) {
-  //     try {
-  //       // Faz a solicitação para o endpoint do servidor
-  //       const response = await fetch(
-  //         `http://localhost:5000/download-pdf/${project.id}`
-  //       );
-  //       if (!response.ok) {
-  //         throw new Error("Erro ao baixar o arquivo PDF.");
-  //       }
+  async function handleDownloadClick(project) {
+    if (project) {
+      try {
+        const response = await fetch(
+          `/api/downloadPdf?projectId=${project.id}`
+        );
+        if (!response.ok) {
+          throw new Error("Erro ao baixar o arquivo PDF.");
+        }
 
-  //       // Converte a resposta para um Blob
-  //       const blob = await response.blob();
+        const blob = await response.blob();
 
-  //       // Cria um objeto URL para o Blob
-  //       const blobURL = URL.createObjectURL(blob);
+        const blobURL = URL.createObjectURL(blob);
 
-  //       // Cria um link de download
-  //       const link = document.createElement("a");
-  //       link.href = blobURL;
-  //       link.download = `project_${project.id}_file.pdf`; // Nome do arquivo para download
-  //       link.click();
+        const link = document.createElement("a");
+        link.href = blobURL;
+        link.download = `project_${project.id}_file.pdf`;
+        link.click();
 
-  //       // Limpa o objeto URL após o download
-  //       URL.revokeObjectURL(blobURL);
-  //     } catch (error) {
-  //       console.error("Erro ao baixar o arquivo PDF:", error);
-  //     }
-  //   }
-  // }
+        URL.revokeObjectURL(blobURL);
+      } catch (error) {
+        console.error("Erro ao baixar o arquivo PDF:", error);
+      }
+    }
+  }
 
   async function handleEditClick(project) {
     if (edit) {
@@ -296,7 +293,7 @@ export default function Project() {
           setIsOpenDownload(!isOpenDownload);
         }}
         onSubmit={() => {
-          // handleDownloadClick(project);
+          handleDownloadClick(project);
           setIsOpenDownload(!isOpenDownload);
         }}
       >

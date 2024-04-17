@@ -1,6 +1,11 @@
-import { ModalContent, ModalWrapper } from "./styles";
+import {
+  ModalAnalysis,
+  ModalAnalysisContent,
+  ModalContent,
+  ModalWrapper,
+} from "./styles";
 
-export const Modal = ({ isOpen, onClose, children, onSubmit }) => {
+export const Modal = ({ isOpen, onClose, children, onSubmit, isAnalysis }) => {
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -8,7 +13,17 @@ export const Modal = ({ isOpen, onClose, children, onSubmit }) => {
     onSubmit();
   };
 
-  return (
+  return isAnalysis ? (
+    <ModalAnalysis onClick={onClose}>
+      <ModalAnalysisContent
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={handleSubmit}
+      >
+        {children}
+        <button onClick={onClose}>Fechar</button>
+      </ModalAnalysisContent>
+    </ModalAnalysis>
+  ) : (
     <ModalWrapper onClick={onClose}>
       <ModalContent
         onClick={(e) => e.stopPropagation()}
