@@ -1,6 +1,16 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
-export const NIOSHMethodComponent = ({ content }) => {
+import { UserContext } from "@/context/UserContext";
+import { createAnalysisFirebase } from "@/service/firebase";
+
+export const NIOSHMethodComponent = ({
+  content,
+  idAnalysis,
+  idProject,
+  isSavedImage,
+}) => {
+  const { data } = useContext(UserContext);
+
   const [nameAnalysis, setNameAnalysis] = useState("");
 
   const [horizontalDistance, setHorizontalDistance] = useState("");
@@ -63,6 +73,52 @@ export const NIOSHMethodComponent = ({ content }) => {
 
     setNioshResult({ LPR, color, message });
   }
+
+  function clearNioshResult() {
+    setHorizontalDistance("");
+    setVerticalDistance("");
+    setVerticalDisplacement("");
+    setTorsionAngle("");
+    setAverageFrequency("");
+    setQuality("");
+    setMass("");
+    setNioshResult(null);
+  }
+
+  async function saveNioshResult() {
+    if (
+      !nioshResult ||
+      !nameAnalysis ||
+      !horizontalDistance ||
+      !verticalDistance ||
+      !verticalDisplacement ||
+      !torsionAngle ||
+      !averageFrequency ||
+      !quality ||
+      !mass
+    ) {
+      return;
+    }
+    if (!isSavedImage) {
+      const confirm = window.confirm("Deseja continuar sem salvar a imagem?");
+      if (!confirm) return;
+    }
+    await createAnalysisFirebase(data.uid, idProject, {
+      name_analysis: nameAnalysis,
+      horizontal_distance: horizontalDistance,
+      vertical_distance: verticalDistance,
+      vertical_displacement: verticalDisplacement,
+      torsion_angle: torsionAngle,
+      average_frequency: averageFrequency,
+      quality: quality,
+      mass: mass,
+      niosh_result: nioshResult,
+    });
+  }
+
+  useEffect(() => {
+    clearNioshResult();
+  }, [idAnalysis]);
 
   if (content === "help") {
     return (
@@ -152,12 +208,7 @@ export const NIOSHMethodComponent = ({ content }) => {
           type="text"
           placeholder="Nome da Análise"
           value={nameAnalysis}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setNameAnalysis(value);
-            }
-          }}
+          onChange={(e) => setNameAnalysis(e.target.value)}
         />
         <input
           type="number"
@@ -237,7 +288,7 @@ export const NIOSHMethodComponent = ({ content }) => {
           }}
         />
         <button onClick={calculateNioshResult}>Gerar Resultado</button>
-        <button>Salvar Análise</button>
+        <button onClick={saveNioshResult}>Salvar Análise</button>
         <input
           type="text"
           placeholder="Resultado ..."

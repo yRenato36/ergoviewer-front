@@ -5,6 +5,8 @@ import html2canvas from "html2canvas";
 
 import { UserContext } from "@/context/UserContext";
 
+import { getProjectById } from "@/service/firebase";
+
 import {
   ErgonomicAnalysisContainer,
   ErgonomicAnalysisSubContainer,
@@ -23,17 +25,34 @@ import { RULAMethodComponent } from "@/components/Methods/RULA";
 import IconDrawing from "@/assets/icon-edit.svg";
 import IconRuler from "@/assets/icon-ruler.svg";
 import IconAngle from "@/assets/icon-angle.svg";
+import IconText from "@/assets/icon-text.svg";
 import IconClean from "@/assets/icon-clean.svg";
 
 export default function ErgonomicAnalysis() {
   const router = useRouter();
   const { id: project_id } = router.query;
 
-  const videoRef = useRef(null);
   const { data } = useContext(UserContext);
 
-  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [projectData, setProjectData] = useState(null);
 
+  async function fetchDataProject() {
+    setLoading(true);
+    if (data) {
+      const projectData = await getProjectById(data.uid, project_id);
+      if (projectData) {
+        setProjectData(projectData);
+        console.log(projectData);
+      } else {
+        router.push("/projects");
+      }
+    }
+    setLoading(false);
+  }
+
+  const videoRef = useRef(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
   const [screenshotUrl, setScreenshotUrl] = useState(null);
   const [isOpenAnalysis, setIsOpenAnalysis] = useState(false);
 
@@ -46,6 +65,9 @@ export default function ErgonomicAnalysis() {
   ];
 
   const [isOpenHelp, setIsOpenHelp] = useState(false);
+
+  //Imagem salva?
+  const [isSavedImage, setIsSavedImage] = useState(false);
 
   const handleFileChange = (file) => {
     if (file) setSelectedVideo(URL.createObjectURL(file));
@@ -75,14 +97,14 @@ export default function ErgonomicAnalysis() {
   const [color, setColor] = useState("red");
 
   const primaryColors = [
-    { label: "Vermelho", value: "red" },
-    { label: "Azul", value: "blue" },
-    { label: "Amarelo", value: "yellow" },
-    { label: "Verde", value: "green" },
-    { label: "Laranja", value: "orange" },
-    { label: "Roxo", value: "purple" },
-    { label: "Ciano", value: "cyan" },
-    { label: "Magenta", value: "magenta" },
+    { label: "Vermelho - Branco", value: "red" },
+    { label: "Azul - Branco", value: "blue" },
+    { label: "Amarelo - Preto", value: "yellow" },
+    { label: "Verde - Branco", value: "green" },
+    { label: "Laranja - Preto", value: "orange" },
+    { label: "Roxo - Branco", value: "purple" },
+    { label: "Ciano - Preto", value: "cyan" },
+    { label: "Magenta - Branco", value: "magenta" },
   ];
 
   const contrastColors = {
@@ -110,6 +132,7 @@ export default function ErgonomicAnalysis() {
 
   useEffect(() => {
     if (!isOpenAnalysis) return;
+    setIsSavedImage(false);
     const canvas = canvasRef.current;
     canvas.width = 720 * 2;
     canvas.height = 480 * 2;
@@ -243,6 +266,11 @@ export default function ErgonomicAnalysis() {
     const magnitude1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
     const magnitude2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
 
+    // Verifica se os vetores são quase paralelos
+    if (Math.abs(dotProduct / (magnitude1 * magnitude2) - 1) < 1e-10) {
+      return 180; // Quase paralelo, ângulo próximo de 180 graus
+    }
+
     let angleRad = Math.acos(dotProduct / (magnitude1 * magnitude2));
 
     let angleDeg = (angleRad * 180) / Math.PI;
@@ -301,6 +329,30 @@ export default function ErgonomicAnalysis() {
     setThirdPointAngle(null);
   };
 
+  const [isDrawingTextMode, setIsDrawingTextMode] = useState(false);
+
+  const toggleDrawingTextMode = () => {
+    cancelDrawing();
+    cancelDistance();
+    cancelAngle();
+    setIsDrawingTextMode(!isDrawingTextMode);
+  };
+
+  const startDrawText = ({ nativeEvent }) => {
+    if (!isOpenAnalysis) return;
+    const { offsetX, offsetY } = nativeEvent;
+
+    const text = prompt("Digite o texto:");
+    if (!text) return;
+
+    contextRef.current.font = "bold 20px Arial";
+    contextRef.current.fillStyle = contrastColors[color] || "black";
+    contextRef.current.textAlign = "center";
+    contextRef.current.fillText(text, offsetX, offsetY);
+
+    setIsDrawingTextMode(false);
+  };
+
   const clearCanvas = () => {
     cancelDrawing();
     cancelDistance();
@@ -348,6 +400,8 @@ export default function ErgonomicAnalysis() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    setIsSavedImage(true);
   };
 
   useEffect(() => {
@@ -424,6 +478,8 @@ export default function ErgonomicAnalysis() {
                   ? startMeasuringDistance
                   : isMeasuringAngleMode
                   ? startMeasuringAngle
+                  : isDrawingTextMode
+                  ? startDrawText
                   : null
               }
               onMouseUp={
@@ -486,6 +542,20 @@ export default function ErgonomicAnalysis() {
                   className={"icon"}
                 />
               </button>
+              <button
+                className="small-component"
+                onClick={toggleDrawingTextMode}
+                style={
+                  isDrawingTextMode ? { backgroundColor: "lightcyan" } : {}
+                }
+              >
+                <Image
+                  src={IconText}
+                  alt="Texto"
+                  title="Texto"
+                  className={"icon"}
+                />
+              </button>
               <button className="small-component">
                 <Image
                   src={IconClean}
@@ -501,7 +571,10 @@ export default function ErgonomicAnalysis() {
             </div>
           </div>
           {selectedMethod == 1 ? (
-            <NIOSHMethodComponent />
+            <NIOSHMethodComponent
+              isSavedImage={isSavedImage}
+              idProject={project_id}
+            />
           ) : selectedMethod == 2 ? (
             <OWASMethodComponent />
           ) : selectedMethod == 3 ? (
