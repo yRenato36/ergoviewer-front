@@ -9,7 +9,6 @@ import {
   uploadPdfToStorage,
 } from "@/service/firebase";
 import { UserContext } from "@/context/UserContext";
-import { Input } from "@/components/Input";
 import { InputFile } from "@/components/InputFile";
 import { Modal } from "@/components/Modal";
 
@@ -100,7 +99,7 @@ export default function CreateDocument() {
     <DocumentContainer>
       <Editor
         style={{ maxHeight: "680px" }}
-        apiKey="rze5ssngf1fn1ir9eirf4b98zfa7sr9t948ec8lgl6johlr7"
+        apiKey="a6100r4ea397xtzqepersskopwhjdma3wlpyb6zr3jrwv1xf"
         init={{
           plugins:
             "anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed linkchecker a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode editimage advtemplate ai mentions tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss markdown",
@@ -172,10 +171,7 @@ export default function CreateDocument() {
           substituir o conteúdo atual.
         </p>
         <div>
-          <InputFile
-            accept=".txt"
-            onChange={(file) => setFileUpload(file)} // Modificado para passar apenas o arquivo
-          />
+          <InputFile accept=".txt" onChange={(file) => setFileUpload(file)} />
         </div>
         <button type="submit">Carregar</button>
       </Modal>
@@ -195,10 +191,7 @@ export default function CreateDocument() {
           arquivo atual.
         </p>
         <div>
-          <InputFile
-            accept=".pdf"
-            onChange={(file) => setFileSave(file)} // Modificado para passar apenas o arquivo
-          />
+          <InputFile accept=".pdf" onChange={(file) => setFileSave(file)} />
         </div>
         <button type="submit">Salvar</button>
       </Modal>

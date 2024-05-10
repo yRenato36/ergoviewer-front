@@ -26,7 +26,6 @@ export const ModalContent = styled("form", {
   flexDirection: "column",
 
   alignItems: "center",
-  justifyContent: "center",
 
   padding: "20px",
 
@@ -36,6 +35,21 @@ export const ModalContent = styled("form", {
   backgroundColor: "$white",
 
   gap: "0.25rem",
+
+  overflowY: "scroll",
+
+  "&::-webkit-scrollbar": {
+    width: "8px",
+  },
+
+  "&::-webkit-scrollbar-thumb": {
+    backgroundColor: "$color04",
+    borderRadius: "4px",
+  },
+
+  "&::-webkit-scrollbar-thumb:hover": {
+    backgroundColor: "$color05",
+  },
 
   "> div": {
     width: "100%",
@@ -80,7 +94,7 @@ export const ModalContent = styled("form", {
     textAlign: "center",
 
     fontSize: "1rem",
-    fontWeight: 500,
+    fontWeight: 600,
   },
 
   span: {
@@ -93,21 +107,6 @@ export const ModalContent = styled("form", {
 
     fontSize: "0.875rem",
     fontWeight: 400,
-  },
-
-  overflowY: "scroll",
-
-  "&::-webkit-scrollbar": {
-    width: "8px",
-  },
-
-  "&::-webkit-scrollbar-thumb": {
-    backgroundColor: "$color04",
-    borderRadius: "4px",
-  },
-
-  "&::-webkit-scrollbar-thumb:hover": {
-    backgroundColor: "$color05",
   },
 });
 
@@ -130,9 +129,9 @@ export const ModalAnalysis = styled("div", {
   zIndex: 100,
 });
 
-export const ModalAnalysisContent = styled("form", {
+export const ModalAnalysisContent = styled("div", {
   width: "1180px",
-  height: "720px",
+  minHeight: "580px",
 
   display: "flex",
   flexDirection: "column",
@@ -171,7 +170,12 @@ export const ModalAnalysisContent = styled("form", {
   },
 
   ".img-container": {
+    position: "relative",
+
+    paddingTop: "0.25rem",
+
     width: "720px",
+    height: "100%",
 
     display: "flex",
     flexDirection: "column",
@@ -183,15 +187,26 @@ export const ModalAnalysisContent = styled("form", {
   },
 
   ".screenshot": {
-    width: "100%",
-    height: "auto",
+    width: "720px",
+    height: "480px",
 
-    margin: "auto 0",
+    top: "0%",
+    left: "0%",
+    transform: "translate(-0%, -0%)",
 
     borderRadius: "0.5rem",
 
     border: "1px solid $color04",
     borderRadius: "0.5rem",
+  },
+
+  ".canvas-overlay": {
+    marginTop: "5px",
+
+    position: "absolute",
+    top: "0%",
+    left: "0%",
+    transform: "translate(-0%, -0%)",
   },
 
   ".params-container": {

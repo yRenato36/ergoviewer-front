@@ -1,18 +1,25 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
+import Image from "next/image";
+import html2canvas from "html2canvas";
+
 import { UserContext } from "@/context/UserContext";
+
 import {
   ErgonomicAnalysisContainer,
   ErgonomicAnalysisSubContainer,
   StyledVideo,
 } from "./style";
-import html2canvas from "html2canvas";
+
 import { InputFile } from "@/components/InputFile";
 import { Button } from "@/components/Button";
 import { Modal } from "@/components/Modal";
 import { Select } from "@/components/Select";
 
-import Image from "next/image";
+import { NIOSHMethodComponent } from "@/components/Methods/NIOSH";
+import { OWASMethodComponent } from "@/components/Methods/OWAS";
+import { RULAMethodComponent } from "@/components/Methods/RULA";
+
 import IconDrawing from "@/assets/icon-edit.svg";
 import IconRuler from "@/assets/icon-ruler.svg";
 import IconAngle from "@/assets/icon-angle.svg";
@@ -25,13 +32,10 @@ export default function ErgonomicAnalysis() {
   const videoRef = useRef(null);
   const { data } = useContext(UserContext);
 
-  const [loading, setLoading] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   const [screenshotUrl, setScreenshotUrl] = useState(null);
   const [isOpenAnalysis, setIsOpenAnalysis] = useState(false);
-
-  const [nameAnalysis, setNameAnalysis] = useState("");
 
   const [selectedMethod, setSelectedMethod] = useState(0);
   const optionsMethods = [
@@ -41,63 +45,11 @@ export default function ErgonomicAnalysis() {
     { value: 3, label: "Método RULA" },
   ];
 
-  // NIOSH
-  const [horizontalDistanceNIOSH, setHorizontalDistanceNIOSH] = useState("");
-  const [verticalDistanceNIOSH, setVerticalDistanceNIOSH] = useState("");
-  const [verticalShiftNIOSH, setVerticalShiftNIOSH] = useState("");
-  const [torqueAngleNIOSH, setTorqueAngleNIOSH] = useState("");
-  const [averageFrequencyNIOSH, setAverageFrequencyNIOSH] = useState("");
-  const [qualityNIOSH, setQualityNIOSH] = useState("");
-  const [massNIOSH, setMassNIOSH] = useState("");
-
-  //OWAS
-  const [armPostureOWAS, setArmPostureOWAS] = useState(0);
-  const [backPostureOWAS, setBackPostureOWAS] = useState(0);
-  const [legPostureOWAS, setLegPostureOWAS] = useState(0);
-  const [highLoadOWAS, setHighLoadOWAS] = useState(0);
-  const optionsOWAS = {
-    armPosture: [
-      { value: 0, label: "Selecione uma opção de Postura dos Braços" },
-      { value: 1, label: "Os dois braços abaixo dos ombros" },
-      { value: 2, label: "Um braço no nível ou acima dos ombros" },
-      { value: 3, label: "Ambos os braços no nível ou acima dos ombros" },
-    ],
-    backPosture: [
-      { value: 0, label: "Selecione uma opção de Postura das Costas" },
-      { value: 1, label: "Postura ereta" },
-      { value: 2, label: "Postura inclinada" },
-      { value: 3, label: "Postura ereta e torcida" },
-      { value: 4, label: "Postura inclinada e torcida" },
-    ],
-    legPosture: [
-      { value: 0, label: "Selecione uma opção de Postura das Pernas" },
-      { value: 1, label: "Sentado" },
-      { value: 2, label: "De pé com ambas as pernas esticadas" },
-      { value: 3, label: "De pé com uma das pernas esticada" },
-      { value: 4, label: "De pé com ambos os joelhos dobrados" },
-      { value: 5, label: "De pé com um dos joelhos dobrados" },
-      { value: 6, label: "Ajoelhado com ambos os joelhos" },
-      { value: 7, label: "Andando ou se movendo" },
-    ],
-    highLoad: [
-      { value: 0, label: "Selecione uma opção do Nivel de Carga" },
-      { value: 1, label: "Menor que 10kg" },
-      { value: 2, label: "Entre 10kg e 20kg" },
-      { value: 3, label: "Maior que 20kg" },
-    ],
-  };
+  const [isOpenHelp, setIsOpenHelp] = useState(false);
 
   const handleFileChange = (file) => {
     if (file) setSelectedVideo(URL.createObjectURL(file));
   };
-
-  useEffect(() => {
-    if (selectedVideo) videoRef.current.src = selectedVideo;
-  }, [selectedVideo]);
-
-  useEffect(() => {
-    console.log(selectedMethod);
-  }, [selectedMethod]);
 
   const handleScreenshot = () => {
     html2canvas(videoRef.current).then(function (canvas) {
@@ -107,101 +59,300 @@ export default function ErgonomicAnalysis() {
     });
   };
 
-  function renderInputContainer() {
-    if (selectedMethod == 1) {
-      return (
-        <div className="input-container">
-          <input
-            type="text"
-            placeholder="Nome da Análise"
-            value={nameAnalysis}
-            onChange={(e) => setNameAnalysis(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Distância Horizontal (cm)"
-            value={horizontalDistanceNIOSH}
-            onChange={(e) => setHorizontalDistanceNIOSH(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Distância Vertical (cm)"
-            value={verticalDistanceNIOSH}
-            onChange={(e) => setVerticalDistanceNIOSH(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Deslocamento Vertical (cm)"
-            value={verticalShiftNIOSH}
-            onChange={(e) => setVerticalShiftNIOSH(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Ãngulo de Torção do Tronco (graus)"
-            value={torqueAngleNIOSH}
-            onChange={(e) => setTorqueAngleNIOSH(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Frequência Média de Levantamento"
-            value={averageFrequencyNIOSH}
-            onChange={(e) => setAverageFrequencyNIOSH(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Qualidade da Pega"
-            value={qualityNIOSH}
-            onChange={(e) => setQualityNIOSH(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="MassNIOSHa da Carga"
-            value={massNIOSH}
-            onChange={(e) => setMassNIOSH(e.target.value)}
-          />
-          <button>Gerar Resultado</button>
-          <button>Salvar Análise</button>
-          <input type="text" placeholder="Resultado ..." disabled />
-        </div>
-      );
-    } else if (selectedMethod == 2) {
-      return (
-        <div className="input-container">
-          <Select
-            options={optionsOWAS.armPosture}
-            value={armPostureOWAS}
-            onChange={(e) => setArmPostureOWAS(e.target.value)}
-          />
-          <Select
-            options={optionsOWAS.backPosture}
-            value={backPostureOWAS}
-            onChange={(e) => setBackPostureOWAS(e.target.value)}
-          />
-          <Select
-            options={optionsOWAS.legPosture}
-            value={legPostureOWAS}
-            onChange={(e) => setLegPostureOWAS(e.target.value)}
-          />
-          <Select
-            options={optionsOWAS.highLoad}
-            value={highLoadOWAS}
-            onChange={(e) => setHighLoadOWAS(e.target.value)}
-          />
-          <button>Gerar Resultado</button>
-          <button>Salvar Análise</button>
-          <input type="text" placeholder="Resultado ..." disabled />
-        </div>
-      );
-    } else if (selectedMethod == 3) {
-      return <div className="input-container"></div>;
-    } else {
-      return (
-        <div className="input-container">
-          <h1>Selecione um Método</h1>
-        </div>
-      );
+  const handleHelpClick = () => {
+    switch (selectedMethod) {
+      case "1":
+        return <NIOSHMethodComponent content="help" />;
+      case "2":
+        return <OWASMethodComponent content="help" />;
+      case "3":
+        return <RULAMethodComponent content="help" />;
+      default:
+        return <h1>Selecione uma opção</h1>;
     }
+  };
+
+  const [color, setColor] = useState("red");
+
+  const primaryColors = [
+    { label: "Vermelho", value: "red" },
+    { label: "Azul", value: "blue" },
+    { label: "Amarelo", value: "yellow" },
+    { label: "Verde", value: "green" },
+    { label: "Laranja", value: "orange" },
+    { label: "Roxo", value: "purple" },
+    { label: "Ciano", value: "cyan" },
+    { label: "Magenta", value: "magenta" },
+  ];
+
+  const contrastColors = {
+    red: "white",
+    blue: "white",
+    yellow: "black",
+    green: "white",
+    orange: "black",
+    purple: "white",
+    cyan: "black",
+    magenta: "white",
+  };
+
+  const canvasRef = useRef(null);
+  const contextRef = useRef(null);
+
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+
+  const toggleDrawingMode = () => {
+    cancelDistance();
+    cancelAngle();
+    setIsDrawingMode(!isDrawingMode);
+  };
+
+  useEffect(() => {
+    if (!isOpenAnalysis) return;
+    const canvas = canvasRef.current;
+    canvas.width = 720 * 2;
+    canvas.height = 480 * 2;
+    canvas.style.width = `720px`;
+    canvas.style.height = `480px`;
+
+    const context = canvas.getContext("2d");
+    context.scale(2, 2);
+    context.lineCap = "round";
+    context.strokeStyle = color || "black";
+    context.lineWidth = 5;
+    contextRef.current = context;
+  }, [isOpenAnalysis]);
+
+  const startDrawing = ({ nativeEvent }) => {
+    const { offsetX, offsetY } = nativeEvent;
+    if (!isOpenAnalysis) return;
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(offsetX, offsetY);
+    setIsDrawing(true);
+  };
+
+  const finishDrawing = () => {
+    if (!isOpenAnalysis) return;
+    contextRef.current.closePath();
+    setIsDrawing(false);
+  };
+
+  const draw = ({ nativeEvent }) => {
+    const { offsetX, offsetY } = nativeEvent;
+    if (!isDrawing || !isOpenAnalysis) return;
+    contextRef.current.lineTo(offsetX, offsetY);
+    contextRef.current.stroke();
+  };
+
+  const drawCircle = (x, y) => {
+    contextRef.current.beginPath();
+    contextRef.current.arc(x, y, 5, 0, Math.PI * 2);
+    contextRef.current.fillStyle = contrastColors[color] || "yellow";
+    contextRef.current.fill();
+  };
+
+  const [isMeasuringDistanceMode, setIsMeasuringDistanceMode] = useState(false);
+  const [firstPointDistance, setFirstPointDistance] = useState(null);
+  const [secondPointDistance, setSecondPointDistance] = useState(null);
+
+  const toggleMeasuringDistanceMode = () => {
+    cancelDrawing();
+    cancelAngle();
+    setIsMeasuringDistanceMode(!isMeasuringDistanceMode);
+  };
+
+  const drawDistanceText = (startPointDistance, endPointDistance, distance) => {
+    const midPointX = (startPointDistance.x + endPointDistance.x) / 2;
+    const midPointY = (startPointDistance.y + endPointDistance.y) / 2;
+    contextRef.current.font = "14px Arial";
+    contextRef.current.fillStyle = contrastColors[color] || "yellow";
+    contextRef.current.textAlign = "center";
+    contextRef.current.fillText(distance.toFixed(2), midPointX, midPointY);
+  };
+
+  const drawMeasureLine = () => {
+    if (!firstPointDistance || !secondPointDistance) return;
+
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(firstPointDistance.x, firstPointDistance.y);
+    contextRef.current.lineTo(secondPointDistance.x, secondPointDistance.y);
+    contextRef.current.stroke();
+  };
+
+  const calculateDistance = () => {
+    if (!firstPointDistance || !secondPointDistance) return 0;
+
+    const distance = Math.sqrt(
+      Math.pow(secondPointDistance.x - firstPointDistance.x, 2) +
+        Math.pow(secondPointDistance.y - firstPointDistance.y, 2)
+    );
+    return distance;
+  };
+
+  const startMeasuringDistance = ({ nativeEvent }) => {
+    if (!isOpenAnalysis) return;
+    const { offsetX, offsetY } = nativeEvent;
+    if (!firstPointDistance) {
+      setFirstPointDistance({ x: offsetX, y: offsetY });
+    } else {
+      setSecondPointDistance({ x: offsetX, y: offsetY });
+    }
+  };
+
+  const endMeasuringDistance = () => {
+    if (!isOpenAnalysis) return;
+    if (!firstPointDistance || !secondPointDistance) return;
+
+    drawCircle(firstPointDistance.x, firstPointDistance.y);
+    drawCircle(secondPointDistance.x, secondPointDistance.y);
+    drawMeasureLine();
+
+    const distance = calculateDistance();
+    drawDistanceText(firstPointDistance, secondPointDistance, distance);
+
+    setFirstPointDistance(null);
+    setSecondPointDistance(null);
+  };
+
+  const [isMeasuringAngleMode, setIsMeasuringAngleMode] = useState(false);
+  const [firstPointAngle, setFirstPointAngle] = useState(null);
+  const [secondPointAngle, setSecondPointAngle] = useState(null);
+  const [thirdPointAngle, setThirdPointAngle] = useState(null);
+
+  const toggleMeasuringAngleMode = () => {
+    cancelDrawing();
+    cancelDistance();
+    setIsMeasuringAngleMode(!isMeasuringAngleMode);
+  };
+
+  const calculateAngle = () => {
+    if (!firstPointAngle || !secondPointAngle || !thirdPointAngle) return 0;
+
+    const vector1 = {
+      x: secondPointAngle.x - firstPointAngle.x,
+      y: secondPointAngle.y - firstPointAngle.y,
+    };
+    const vector2 = {
+      x: thirdPointAngle.x - secondPointAngle.x,
+      y: thirdPointAngle.y - secondPointAngle.y,
+    };
+
+    const dotProduct = vector1.x * vector2.x + vector1.y * vector2.y;
+
+    const magnitude1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
+    const magnitude2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
+
+    let angleRad = Math.acos(dotProduct / (magnitude1 * magnitude2));
+
+    let angleDeg = (angleRad * 180) / Math.PI;
+
+    angleDeg = angleDeg > 180 ? 360 - angleDeg : angleDeg;
+
+    return angleDeg;
+  };
+
+  const drawAngleText = (firstPoint, secondPoint, thirdPoint, angleDegrees) => {
+    const centroidX = (firstPoint.x + secondPoint.x + thirdPoint.x) / 3;
+    const centroidY = (firstPoint.y + secondPoint.y + thirdPoint.y) / 3;
+
+    contextRef.current.font = "14px Arial";
+    contextRef.current.fillStyle = contrastColors[color] || "yellow";
+    contextRef.current.textAlign = "center";
+    contextRef.current.fillText(
+      angleDegrees.toFixed(2) + "°",
+      centroidX,
+      centroidY
+    );
+  };
+
+  const startMeasuringAngle = ({ nativeEvent }) => {
+    if (!isOpenAnalysis) return;
+    const { offsetX, offsetY } = nativeEvent;
+    if (!firstPointAngle) {
+      setFirstPointAngle({ x: offsetX, y: offsetY });
+    } else if (!secondPointAngle) {
+      setSecondPointAngle({ x: offsetX, y: offsetY });
+    } else if (!thirdPointAngle) {
+      setThirdPointAngle({ x: offsetX, y: offsetY });
+    }
+  };
+
+  const endMeasuringAngle = () => {
+    if (!isOpenAnalysis) return;
+    if (!firstPointAngle || !secondPointAngle || !thirdPointAngle) return;
+
+    drawCircle(firstPointAngle.x, firstPointAngle.y);
+    drawCircle(secondPointAngle.x, secondPointAngle.y);
+    drawCircle(thirdPointAngle.x, thirdPointAngle.y);
+
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(firstPointAngle.x, firstPointAngle.y);
+    contextRef.current.lineTo(secondPointAngle.x, secondPointAngle.y);
+    contextRef.current.lineTo(thirdPointAngle.x, thirdPointAngle.y);
+    contextRef.current.stroke();
+
+    const angle = calculateAngle();
+
+    drawAngleText(firstPointAngle, secondPointAngle, thirdPointAngle, angle);
+
+    setFirstPointAngle(null);
+    setSecondPointAngle(null);
+    setThirdPointAngle(null);
+  };
+
+  const clearCanvas = () => {
+    cancelDrawing();
+    cancelDistance();
+    cancelAngle();
+    if (!isOpenAnalysis) return;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  function cancelDrawing() {
+    setIsDrawing(false);
+    setIsDrawingMode(false);
   }
+
+  function cancelDistance() {
+    setIsMeasuringDistanceMode(false);
+    setFirstPointDistance(null);
+    setSecondPointDistance(null);
+  }
+
+  function cancelAngle() {
+    setIsMeasuringAngleMode(false);
+    setFirstPointAngle(null);
+    setSecondPointAngle(null);
+    setThirdPointAngle(null);
+  }
+
+  const saveCanvasAndImage = () => {
+    const canvas = canvasRef.current;
+    const img = document.querySelector(".screenshot");
+    const tempCanvas = document.createElement("canvas");
+    const tempCtx = tempCanvas.getContext("2d");
+
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+
+    tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    tempCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+
+    const url = tempCanvas.toDataURL();
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "canvas_and_image.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  useEffect(() => {
+    if (selectedVideo) videoRef.current.src = selectedVideo;
+  }, [selectedVideo]);
 
   return (
     <ErgonomicAnalysisContainer>
@@ -215,7 +366,6 @@ export default function ErgonomicAnalysis() {
             { value: 1, label: "Opção 1" },
             { value: 2, label: "Opção 2" },
           ]}
-          // value={"Opção 0"}
           onChange={(e) => {}}
           onBlur={() => {}}
         />
@@ -247,61 +397,130 @@ export default function ErgonomicAnalysis() {
             value={selectedMethod}
             onChange={(e) => setSelectedMethod(e.target.value)}
           />
-          <button className="small-component">Ajuda</button>
+          <button
+            className="small-component"
+            onClick={() => setIsOpenHelp(!isOpenHelp)}
+          >
+            Ajuda
+          </button>
         </div>
         <div className="sub-container">
           <div className="img-container">
-            {screenshotUrl && (
+            {!screenshotUrl ? (
+              <img className="screenshot" src="" alt="Screenshot" />
+            ) : (
               <img
                 className="screenshot"
                 src={screenshotUrl}
                 alt="Screenshot"
               />
             )}
+            <canvas
+              className="canvas-overlay"
+              onMouseDown={
+                isDrawingMode
+                  ? startDrawing
+                  : isMeasuringDistanceMode
+                  ? startMeasuringDistance
+                  : isMeasuringAngleMode
+                  ? startMeasuringAngle
+                  : null
+              }
+              onMouseUp={
+                isDrawingMode
+                  ? finishDrawing
+                  : isMeasuringDistanceMode
+                  ? endMeasuringDistance
+                  : isMeasuringAngleMode
+                  ? endMeasuringAngle
+                  : null
+              }
+              onMouseMove={isDrawingMode ? draw : null}
+              ref={canvasRef}
+            />
             <div className="params-container">
-              <button className="small-component">
+              <Select
+                options={primaryColors}
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+              />
+              <button
+                className="small-component"
+                onClick={toggleDrawingMode}
+                style={isDrawingMode ? { backgroundColor: "lightcyan" } : {}}
+              >
                 <Image
                   src={IconDrawing}
                   alt="Desenhar"
                   title="Desenhar"
                   className={"icon"}
-                  onClick={() => {}}
                 />
               </button>
-              <button className="small-component">
+              <button
+                className="small-component"
+                onClick={toggleMeasuringDistanceMode}
+                style={
+                  isMeasuringDistanceMode
+                    ? { backgroundColor: "lightcyan" }
+                    : {}
+                }
+              >
                 <Image
                   src={IconRuler}
                   alt="Distância"
                   title="Distância"
                   className={"icon"}
-                  onClick={() => {}}
                 />
               </button>
-              <input type="text" disabled placeholder="Distância" />
-              <button className="small-component">
+              <button
+                className="small-component"
+                onClick={toggleMeasuringAngleMode}
+                style={
+                  isMeasuringAngleMode ? { backgroundColor: "lightcyan" } : {}
+                }
+              >
                 <Image
                   src={IconAngle}
                   alt="Ângulo"
                   title="Ângulo"
                   className={"icon"}
-                  onClick={() => {}}
                 />
               </button>
-              <input type="text" disabled placeholder="Ângulo" />
               <button className="small-component">
                 <Image
                   src={IconClean}
                   alt="Apagar"
                   title="Apagar"
                   className={"icon"}
-                  onClick={() => {}}
+                  onClick={clearCanvas}
                 />
               </button>
-              <button>Salvar Imagem</button>
+              <button type="button" onClick={saveCanvasAndImage}>
+                Salvar Imagem
+              </button>
             </div>
           </div>
-          {renderInputContainer()}
+          {selectedMethod == 1 ? (
+            <NIOSHMethodComponent />
+          ) : selectedMethod == 2 ? (
+            <OWASMethodComponent />
+          ) : selectedMethod == 3 ? (
+            <RULAMethodComponent />
+          ) : (
+            <h1>Selecione um método</h1>
+          )}
         </div>
+        <Modal
+          isOpen={isOpenHelp}
+          onClose={() => {
+            setIsOpenHelp(!isOpenHelp);
+          }}
+          onSubmit={() => {
+            setIsOpenHelp(!isOpenHelp);
+          }}
+        >
+          {handleHelpClick()}
+        </Modal>
       </Modal>
     </ErgonomicAnalysisContainer>
   );
