@@ -300,3 +300,27 @@ export const downloadPdfFromStorage = async (projectId) => {
     return null;
   }
 };
+
+export const createAnalysisFirebase = async (uid, projectId, analysisData) => {
+  try {
+    const analysisCollectionRef = collection(
+      db,
+      "users",
+      uid,
+      "projects",
+      projectId,
+      "analyses"
+    );
+    const analysisDocRef = await addDoc(analysisCollectionRef, analysisData);
+
+    const projectDocRef = doc(db, "users", uid, "projects", projectId);
+    await updateDoc(projectDocRef, {
+      analyses: FieldValue.arrayUnion(analysisDocRef),
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao adicionar análise ao projeto:", error);
+    return false;
+  }
+};

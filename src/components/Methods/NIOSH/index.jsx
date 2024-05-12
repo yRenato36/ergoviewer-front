@@ -11,7 +11,7 @@ export const NIOSHMethodComponent = ({ content }) => {
   const [quality, setQuality] = useState("");
   const [mass, setMass] = useState("");
 
-  const [nioshResult, setNioshResult] = useState(null);
+  const [nioshResult, setNioshResult] = useState("");
 
   function calcularPLR(H, V, D, A, F, C) {
     return (
