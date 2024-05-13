@@ -7,7 +7,7 @@ import {
   FormContainer,
   ProfileContainer,
   ProfileSubContainer,
-} from "./style";
+} from "../../styles/pages/edit-project/style";
 
 import { getProjectById, updateProjectFirebase } from "@/service/firebase";
 

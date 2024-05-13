@@ -6,7 +6,7 @@ import {
   FormContainer,
   ContainerInput,
   ContainerButton,
-} from "./style";
+} from "../../styles/pages/register-address-contact-details/style";
 
 import { useForm } from "@/hooks/useForm";
 import { createUserFirebase } from "@/service/firebase";

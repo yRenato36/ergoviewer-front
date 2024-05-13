@@ -1,5 +1,5 @@
 import { Editor } from "@tinymce/tinymce-react";
-import { DocumentContainer, DocumentSubContainer } from "./style";
+import { DocumentContainer, DocumentSubContainer } from "../../styles/pages/document/style";
 import { Button } from "@/components/Button";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";

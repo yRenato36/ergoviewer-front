@@ -6,7 +6,7 @@ import {
   RegisterProjectContainer,
   FormContainer,
   ContainerButton,
-} from "./style";
+} from "../../styles/pages/register-project/style";
 
 import { useForm } from "@/hooks/useForm";
 import { UserContext } from "@/context/UserContext";

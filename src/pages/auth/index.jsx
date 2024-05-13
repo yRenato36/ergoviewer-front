@@ -5,7 +5,7 @@ import {
   AuthenticationContainer,
   AuthenticationSubContainer,
   PasswordContainer,
-} from "./styles";
+} from "../../styles/pages/auth/styles";
 
 import { useForm } from "@/hooks/useForm";
 import { UserContext } from "@/context/UserContext";

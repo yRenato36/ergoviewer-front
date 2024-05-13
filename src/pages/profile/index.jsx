@@ -7,7 +7,7 @@ import {
   FormContainer,
   ProfileContainer,
   ProfileSubContainer,
-} from "./style";
+} from "../../styles/pages/profile/style";
 
 import {
   getUserDataFromFirestore,

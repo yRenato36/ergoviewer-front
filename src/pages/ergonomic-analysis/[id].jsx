@@ -11,7 +11,7 @@ import {
   ErgonomicAnalysisContainer,
   ErgonomicAnalysisSubContainer,
   StyledVideo,
-} from "./style";
+} from "../../styles/pages/ergonomic-analysis/style";
 
 import { InputFile } from "@/components/InputFile";
 import { Button } from "@/components/Button";

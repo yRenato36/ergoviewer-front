@@ -5,7 +5,7 @@ import {
   RegisterAcessDataContainer,
   FormContainer,
   ContainerButton,
-} from "./style";
+} from "../../styles/pages/register-acess-data/style";
 
 import { useForm } from "@/hooks/useForm";
 import { RegisterContext } from "@/context/RegisterContext";

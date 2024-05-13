@@ -1,4 +1,4 @@
-import { styled } from "../../styles";
+import { styled } from "../..";
 
 export const ErgonomicAnalysisContainer = styled("main", {
   height: "100%",

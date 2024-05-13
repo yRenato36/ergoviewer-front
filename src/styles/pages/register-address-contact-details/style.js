@@ -1,6 +1,6 @@
-import { styled } from "../../styles";
+import { styled } from "../..";
 
-export const RegisterProjectContainer = styled("main", {
+export const RegisterAddressContactDetailsContainer = styled("main", {
   height: "100%",
 
   width: "100%",
@@ -33,6 +33,14 @@ export const FormContainer = styled("form", {
     fontSize: "1.8rem",
     fontWeight: 400,
   },
+});
+
+export const ContainerInput = styled("div", {
+  width: "100%",
+
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "0.625rem",
 });
 
 export const ContainerButton = styled("div", {

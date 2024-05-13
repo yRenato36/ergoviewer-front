@@ -14,7 +14,7 @@ import {
   Theader,
   Trbody,
   SubContainer,
-} from "./styles";
+} from "../../styles/pages/projects/styles";
 
 import { UserContext } from "@/context/UserContext";
 import {

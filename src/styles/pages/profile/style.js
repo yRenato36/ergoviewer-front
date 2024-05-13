@@ -1,6 +1,6 @@
-import { styled } from "../../styles";
+import { styled } from "../..";
 
-export const RegisterAcessDataContainer = styled("main", {
+export const ProfileContainer = styled("main", {
   height: "100%",
 
   width: "100%",
@@ -14,10 +14,8 @@ export const RegisterAcessDataContainer = styled("main", {
 });
 
 export const FormContainer = styled("form", {
-  width: "21.875rem",
-  height: "25rem",
-
-  margin: "7.5rem 0",
+  width: "100%",
+  maxWidth: "50rem",
 
   display: "flex",
   flexDirection: "column",
@@ -26,12 +24,19 @@ export const FormContainer = styled("form", {
   justifyContent: "center",
 
   gap: "0.625rem",
+});
 
-  h1: {
-    textAlign: "center",
+export const ProfileSubContainer = styled("div", {
+  width: "100%",
+  maxWidth: "50rem",
 
-    fontSize: "1.8rem",
-    fontWeight: 400,
+  display: "grid",
+  gridTemplateColumns: "0.5fr 1.5fr",
+
+  alignItems: "center",
+
+  label: {
+    textAlign: "start",
   },
 });
 
