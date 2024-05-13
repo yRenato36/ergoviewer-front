@@ -31,6 +31,17 @@ export const NIOSHMethodComponent = ({
 
   const result = nioshResult || { message: "", color: "" };
 
+  function clearNioshResult() {
+    setHDistance("");
+    setVDistance("");
+    setVDisplacement("");
+    setTAngle("");
+    setAFrequency("");
+    setQuality("");
+    setMass("");
+    setNioshResult(null);
+  }
+
   function calcularPLR(H, V, D, A, F, C) {
     return (
       23 *
@@ -71,29 +82,17 @@ export const NIOSHMethodComponent = ({
     if (P < LPR - threshold || P > LPR + threshold) {
       if (P < LPR) {
         color = "green";
-        message = "Bom, não há necessidade de mudar a operação.";
+        message = "Não são necessárias medidas corretivas.";
       } else {
         color = "red";
-        message =
-          "Risco para a saúde, é necessário mudar a forma de operação o mais rápido possível.";
+        message = "São necessárias correções tão logo quanto possível.";
       }
     } else {
       color = "yellow";
-      message = "Alerta, é recomendável considerar mudar a forma de operação.";
+      message = "São necessárias correções em um futuro próximo.";
     }
 
-    setNioshResult({ LPR, color, message });
-  }
-
-  function clearNioshResult() {
-    setHDistance("");
-    setVDistance("");
-    setVDisplacement("");
-    setTAngle("");
-    setAFrequency("");
-    setQuality("");
-    setMass("");
-    setNioshResult(null);
+    setNioshResult({ score: LPR, color, message });
   }
 
   async function saveNioshResult() {
@@ -107,13 +106,14 @@ export const NIOSHMethodComponent = ({
       !aFrequency ||
       !quality ||
       !mass
-    ) {
+    )
       return;
-    }
+
     if (!isSavedImage) {
       const confirm = window.confirm("Deseja continuar sem salvar a imagem?");
       if (!confirm) return;
     }
+
     await createAnalysisFirebase(data.uid, idProject, {
       method: "NIOSH",
       name_analysis: nameAnalysis,
@@ -216,55 +216,101 @@ export const NIOSHMethodComponent = ({
   } else {
     return (
       <div className="input-container">
-        <input
-          type="text"
-          placeholder="Nome da Análise"
-          value={nameAnalysis}
-          onChange={(e) => setNameAnalysis(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Distância H (cm)"
-          value={hDistance}
-          onChange={(e) => setHDistance(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Distância V (cm)"
-          value={vDistance}
-          onChange={(e) => setVDistance(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Deslocamento V (cm)"
-          value={vDisplacement}
-          onChange={(e) => setVDisplacement(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Angulo de Torção do Tronco (graus)"
-          value={tAngle}
-          onChange={(e) => setTAngle(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Frequência Média de Levantamento"
-          value={aFrequency}
-          onChange={(e) => setAFrequency(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Qualidade da Pega"
-          value={quality}
-          onChange={(e) => setQuality(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Massa da Carga"
-          value={mass}
-          onChange={(e) => setMass(e.target.value)}
-        />
-        <button onClick={calculateNioshResult}>Gerar Resultado</button>
+        <div className="input-with-label">
+          <label htmlFor="name-analysis">Nome da Análise</label>
+          <input
+            id="name-analysis"
+            type="text"
+            value={nameAnalysis}
+            onChange={(e) => setNameAnalysis(e.target.value)}
+          />
+        </div>
+        <div className="input-with-label">
+          <label htmlFor="distance-horizontal">Distância Horizontal (cm)</label>
+          <input
+            id="distance-horizontal"
+            type="number"
+            value={hDistance}
+            onChange={(e) => setHDistance(e.target.value)}
+          />
+        </div>
+        <div className="input-with-label">
+          <label htmlFor="distance-vertical">Distância Vertical (cm)</label>
+          <input
+            id="distance-vertical"
+            type="number"
+            value={vDistance}
+            onChange={(e) => setVDistance(e.target.value)}
+          />
+        </div>
+        <div className="input-with-label">
+          <label htmlFor="displacement-vertical">
+            Deslocamento Vertical (cm)
+          </label>
+          <input
+            id="displacement-vertical"
+            type="number"
+            value={vDisplacement}
+            onChange={(e) => setVDisplacement(e.target.value)}
+          />
+        </div>
+        <div className="input-with-label">
+          <label htmlFor="torso-angle">
+            Angulo de Torção do Tronco (graus)
+          </label>
+          <input
+            id="torso-angle"
+            type="number"
+            value={tAngle}
+            onChange={(e) => setTAngle(e.target.value)}
+          />
+        </div>
+        <div className="input-with-label">
+          <label htmlFor="average-frequency">
+            Frequência Média de Levantamento
+          </label>
+          <input
+            id="average-frequency"
+            type="number"
+            value={aFrequency}
+            onChange={(e) => setAFrequency(e.target.value)}
+          />
+        </div>
+        <div className="input-with-label">
+          <label htmlFor="quality">Qualidade da Pega</label>
+          <input
+            id="quality"
+            type="number"
+            value={quality}
+            onChange={(e) => setQuality(e.target.value)}
+          />
+        </div>
+        <div className="input-with-label">
+          <label htmlFor="mass">Massa da Carga</label>
+          <input
+            id="mass"
+            type="number"
+            value={mass}
+            onChange={(e) => setMass(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={calculateNioshResult}
+          disabled={
+            !nameAnalysis ||
+            !hDistance ||
+            !vDistance ||
+            !vDisplacement ||
+            !tAngle ||
+            !aFrequency ||
+            !quality ||
+            !mass
+              ? true
+              : false
+          }
+        >
+          Gerar Resultado
+        </button>
         <button onClick={saveNioshResult}>Salvar Análise</button>
         <textarea
           type="text"

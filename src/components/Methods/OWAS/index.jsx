@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Image from "next/image";
+
+import { UserContext } from "@/context/UserContext";
+import { createAnalysisFirebase } from "@/service/firebase";
+
 import { Select } from "@/components/Select";
 
 import ArmPosture1 from "@/assets/method/owas/arm-posture-01.png";
@@ -20,13 +24,27 @@ import HighLoad1 from "@/assets/method/owas/high-load-01.png";
 import HighLoad2 from "@/assets/method/owas/high-load-02.png";
 import HighLoad3 from "@/assets/method/owas/high-load-03.png";
 
-export const OWASMethodComponent = ({ content }) => {
+export const OWASMethodComponent = ({
+  content,
+  idAnalysis,
+  idProject,
+  isSavedImage,
+}) => {
+  const { data } = useContext(UserContext);
+  //Nome da Analise
   const [nameAnalysis, setNameAnalysis] = useState("");
-
+  //Postura dos Braços
   const [armPosture, setArmPosture] = useState(0);
+  //Postura das Costas
   const [backPosture, setBackPosture] = useState(0);
+  //Postura das Pernas
   const [legPosture, setLegPosture] = useState(0);
+  //Carga Alta
   const [highLoad, setHighLoad] = useState(0);
+  //Resultado do OWAS
+  const [OWASResult, setOWASResult] = useState();
+
+  const result = OWASResult || { message: "", color: "" };
 
   const options = {
     armPosture: [
@@ -59,6 +77,124 @@ export const OWASMethodComponent = ({ content }) => {
       { value: 3, label: "Maior que 20kg" },
     ],
   };
+
+  function clearOWASResult() {
+    setArmPosture(0);
+    setBackPosture(0);
+    setLegPosture(0);
+    setHighLoad(0);
+    setOWASResult();
+  }
+
+  function calculateOWASResult() {
+    if (!armPosture || !backPosture || !legPosture || !highLoad) return;
+
+    const armPostureValue = parseInt(armPosture);
+    const backPostureValue = parseInt(backPosture);
+    const legPostureValue = parseInt(legPosture);
+    const highLoadValue = parseInt(highLoad);
+
+    const owasTable = [
+      [1, 1, 2, 2],
+      [1, 1, 2, 3],
+      [1, 2, 3, 3],
+      [2, 2, 3, 3],
+      [2, 3, 4, 4],
+      [2, 3, 4, 4],
+      [3, 4, 5, 5],
+      [4, 5, 5, 5],
+    ];
+
+    const armIndex = armPostureValue - 1;
+    const backIndex = backPostureValue - 1;
+    const legIndex = legPostureValue - 1;
+    const loadIndex = highLoadValue - 1;
+
+    if (
+      armIndex < 0 ||
+      armIndex >= owasTable.length ||
+      backIndex < 0 ||
+      backIndex >= owasTable[0].length ||
+      legIndex < 0 ||
+      legIndex >= owasTable[0].length ||
+      loadIndex < 0 ||
+      loadIndex >= owasTable[0].length
+    ) {
+      return;
+    }
+
+    const owasScore =
+      owasTable[armIndex][loadIndex] +
+      owasTable[backIndex][loadIndex] +
+      owasTable[legIndex][loadIndex];
+
+    let result = "";
+    switch (owasScore) {
+      case 1:
+        result = {
+          owasScore,
+          message: "Não são necessárias medidas corretivas.",
+          color: "green",
+        };
+        break;
+      case 2:
+        result = {
+          owasScore,
+          message: "São necessárias correções em um futuro próximo.",
+          color: "yellow",
+        };
+        break;
+      case 3:
+        result = {
+          owasScore,
+          message: "São necessárias correções tão logo quanto possível.",
+          color: "orange",
+        };
+        break;
+      case 4:
+        result = {
+          owasScore,
+          message: "São necessárias correções imediatamente.",
+          color: "red",
+        };
+        break;
+      default:
+        result = "Resultado não definido.";
+    }
+
+    setOWASResult(result);
+  }
+
+  async function saveOWASResult() {
+    if (
+      !OWASResult ||
+      !nameAnalysis ||
+      !armPosture ||
+      !backPosture ||
+      !legPosture ||
+      !highLoad
+    )
+      return;
+
+    if (!isSavedImage) {
+      const confirm = window.confirm("Deseja continuar sem salvar a imagem?");
+      if (!confirm) return;
+    }
+
+    await createAnalysisFirebase(data.uid, idProject, {
+      method: "OWAS",
+      name_analysis: nameAnalysis,
+      result: result,
+      arm_posture: armPosture,
+      back_posture: backPosture,
+      leg_posture: legPosture,
+      high_load: highLoad,
+    });
+  }
+
+  useEffect(() => {
+    clearOWASResult();
+  }, [idAnalysis]);
 
   if (content === "help") {
     return (
@@ -111,12 +247,15 @@ export const OWASMethodComponent = ({ content }) => {
   } else {
     return (
       <div className="input-container">
-        <input
-          type="text"
-          placeholder="Nome da Análise"
-          value={nameAnalysis}
-          onChange={(e) => setNameAnalysis(e.target.value)}
-        />
+        <div className="input-with-label">
+          <label htmlFor="name-analysis">Nome da Análise</label>
+          <input
+            id="name-analysis"
+            type="text"
+            value={nameAnalysis}
+            onChange={(e) => setNameAnalysis(e.target.value)}
+          />
+        </div>
         <Select
           options={options.armPosture}
           value={armPosture}
@@ -137,9 +276,39 @@ export const OWASMethodComponent = ({ content }) => {
           value={highLoad}
           onChange={(e) => setHighLoad(e.target.value)}
         />
-        <button>Gerar Resultado</button>
-        <button>Salvar Análise</button>
-        <input type="text" placeholder="Resultado ..." disabled />
+        <button
+          onClick={calculateOWASResult}
+          disabled={
+            !nameAnalysis ||
+            !armPosture ||
+            !backPosture ||
+            !legPosture ||
+            !highLoad
+              ? true
+              : false
+          }
+        >
+          Gerar Resultado
+        </button>
+        <button onClick={saveOWASResult}>Salvar Análise</button>
+        <input
+          type="text"
+          placeholder="Resultado ..."
+          value={result.message}
+          style={
+            result.color
+              ? {
+                  height: "4.0625rem",
+                  color: "black",
+                  fontWeight: "bold",
+                  overflowWrap: "break-word",
+                  backgroundColor: result.color,
+                  resize: "none",
+                }
+              : {}
+          }
+          disabled
+        />
       </div>
     );
   }

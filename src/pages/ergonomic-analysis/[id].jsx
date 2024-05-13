@@ -5,7 +5,7 @@ import html2canvas from "html2canvas";
 
 import { UserContext } from "@/context/UserContext";
 
-import { getProjectById } from "@/service/firebase";
+import { getAllAnalysesFirebase } from "@/service/firebase";
 
 import {
   ErgonomicAnalysisContainer,
@@ -35,21 +35,44 @@ export default function ErgonomicAnalysis() {
   const { data } = useContext(UserContext);
 
   const [loading, setLoading] = useState(false);
-  const [projectData, setProjectData] = useState(null);
+  const [listAnalyses, setListAnalyses] = useState([]);
+  const [analysisData, setAnalysisData] = useState(null);
+  const [selectedAnalysis, setSelectedAnalysis] = useState(0);
 
-  async function fetchDataProject() {
+  let optionsAnalysis = [];
+
+  async function fetchDataAnalysis() {
     setLoading(true);
     if (data) {
-      const projectData = await getProjectById(data.uid, project_id);
-      if (projectData) {
-        setProjectData(projectData);
-        console.log(projectData);
+      const listAnalysisData = await getAllAnalysesFirebase(
+        data.uid,
+        project_id
+      );
+      setListAnalyses(listAnalysisData);
+      if (listAnalysisData) {
+        optionsAnalysis.push(
+          listAnalysisData.map((analysis) => {
+            return {
+              value: analysis.id,
+              label: `${analysis.name_analysis + "-" + analysis.method}`,
+            };
+          })
+        );
       } else {
         router.push("/projects");
       }
     }
+    console.log("Options", optionsAnalysis);
     setLoading(false);
   }
+
+  useEffect(() => {
+    fetchDataAnalysis();
+  }, [data]);
+
+  useEffect(() => {
+    setAnalysisData(listAnalyses[selectedAnalysis]);
+  }, [listAnalyses]);
 
   const videoRef = useRef(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -64,9 +87,21 @@ export default function ErgonomicAnalysis() {
     { value: 3, label: "Método RULA" },
   ];
 
+  useEffect(() => {
+    if (analysisData) {
+      console.log(analysisData);
+      setSelectedMethod(
+        optionsMethods.forEach((options) => {
+          if (options.label.includes(analysisData.method)) {
+            setSelectedMethod(options.value);
+          }
+        })
+      );
+    }
+  }, [analysisData]);
+
   const [isOpenHelp, setIsOpenHelp] = useState(false);
 
-  //Imagem salva?
   const [isSavedImage, setIsSavedImage] = useState(false);
 
   const handleFileChange = (file) => {
@@ -191,64 +226,60 @@ export default function ErgonomicAnalysis() {
 
     const text = distance.toFixed(2);
     const textWidth = contextRef.current.measureText(text).width;
-    const textHeight = 14; // Altura da fonte definida anteriormente
+    const textHeight = 14;
 
-    const padding = 8; // Espaçamento entre o texto e o fundo
-    const borderRadius = 3; // Raio da borda do retângulo de fundo
+    const padding = 8;
+    const borderRadius = 3;
 
-    // Calcular as coordenadas do retângulo de fundo
     const rectX = midPointX - textWidth / 2 - padding;
     const rectY = midPointY - textHeight / 2 - padding;
     const rectWidth = textWidth + 2 * padding;
     const rectHeight = textHeight + 2 * padding;
 
-    // Desenhar o retângulo de fundo amarelo com borda e borderRadius
     contextRef.current.fillStyle = color || "yellow";
-    contextRef.current.strokeStyle = contrastColors[color] || "black"; // Cor da borda
-    contextRef.current.lineWidth = 2; // Largura da borda
-    contextRef.current.lineJoin = "round"; // Estilo de junção da linha para borderRadius
+    contextRef.current.strokeStyle = contrastColors[color] || "black";
+    contextRef.current.lineWidth = 2;
+    contextRef.current.lineJoin = "round";
     contextRef.current.beginPath();
-    contextRef.current.moveTo(rectX + borderRadius, rectY); // Mover para o canto superior esquerdo
-    contextRef.current.lineTo(rectX + rectWidth - borderRadius, rectY); // Desenhar linha superior
+    contextRef.current.moveTo(rectX + borderRadius, rectY);
+    contextRef.current.lineTo(rectX + rectWidth - borderRadius, rectY);
     contextRef.current.quadraticCurveTo(
       rectX + rectWidth,
       rectY,
       rectX + rectWidth,
       rectY + borderRadius
-    ); // Curva superior direita
+    );
     contextRef.current.lineTo(
       rectX + rectWidth,
       rectY + rectHeight - borderRadius
-    ); // Desenhar linha direita
+    );
     contextRef.current.quadraticCurveTo(
       rectX + rectWidth,
       rectY + rectHeight,
       rectX + rectWidth - borderRadius,
       rectY + rectHeight
-    ); // Curva inferior direita
-    contextRef.current.lineTo(rectX + borderRadius, rectY + rectHeight); // Desenhar linha inferior
+    );
+    contextRef.current.lineTo(rectX + borderRadius, rectY + rectHeight);
     contextRef.current.quadraticCurveTo(
       rectX,
       rectY + rectHeight,
       rectX,
       rectY + rectHeight - borderRadius
-    ); // Curva inferior esquerda
-    contextRef.current.lineTo(rectX, rectY + borderRadius); // Desenhar linha esquerda
+    );
+    contextRef.current.lineTo(rectX, rectY + borderRadius);
     contextRef.current.quadraticCurveTo(
       rectX,
       rectY,
       rectX + borderRadius,
       rectY
-    ); // Curva superior esquerda
+    );
     contextRef.current.closePath();
-    contextRef.current.fill(); // Preencher o retângulo
-    contextRef.current.stroke(); // Desenhar a borda
+    contextRef.current.fill();
+    contextRef.current.stroke();
 
-    // Ajustar as coordenadas de desenho vertical do texto para centralizá-lo verticalmente
     const textX = midPointX;
-    const textY = midPointY + textHeight / 4; // Ajuste para centralizar verticalmente
+    const textY = midPointY + textHeight / 4;
 
-    // Desenhar o texto sobre o retângulo de fundo
     contextRef.current.font = "14px Arial";
     contextRef.current.fillStyle = contrastColors[color] || "black";
     contextRef.current.textAlign = "center";
@@ -318,32 +349,31 @@ export default function ErgonomicAnalysis() {
   const calculateAngle = () => {
     if (!firstPointAngle || !secondPointAngle || !thirdPointAngle) return 0;
 
-    const vector1 = {
-      x: secondPointAngle.x - firstPointAngle.x,
-      y: secondPointAngle.y - firstPointAngle.y,
+    const AB = {
+      x: firstPointAngle.x - secondPointAngle.x,
+      y: firstPointAngle.y - secondPointAngle.y,
     };
-    const vector2 = {
+    const AC = {
       x: thirdPointAngle.x - secondPointAngle.x,
       y: thirdPointAngle.y - secondPointAngle.y,
     };
 
-    const dotProduct = vector1.x * vector2.x + vector1.y * vector2.y;
+    const dotProduct = AB.x * AC.x + AB.y * AC.y;
 
-    const magnitude1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
-    const magnitude2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
+    const magnitudeAB = Math.sqrt(AB.x ** 2 + AB.y ** 2);
+    const magnitudeAC = Math.sqrt(AC.x ** 2 + AC.y ** 2);
 
-    // Verifica se os vetores são quase paralelos
-    if (Math.abs(dotProduct / (magnitude1 * magnitude2) - 1) < 1e-10) {
-      return 180; // Quase paralelo, ângulo próximo de 180 graus
+    const cosineTheta = dotProduct / (magnitudeAB * magnitudeAC);
+
+    let angle = Math.acos(cosineTheta);
+
+    angle = angle * (180 / Math.PI);
+
+    if (angle > 180) {
+      angle = 360 - angle;
     }
 
-    let angleRad = Math.acos(dotProduct / (magnitude1 * magnitude2));
-
-    let angleDeg = (angleRad * 180) / Math.PI;
-
-    angleDeg = angleDeg > 180 ? 360 - angleDeg : angleDeg;
-
-    return angleDeg;
+    return angle;
   };
 
   const drawAngleText = (firstPoint, secondPoint, thirdPoint, angleDegrees) => {
@@ -352,64 +382,60 @@ export default function ErgonomicAnalysis() {
 
     const text = angleDegrees.toFixed(2) + "°";
     const textWidth = contextRef.current.measureText(text).width;
-    const textHeight = 14; // Altura da fonte definida anteriormente
+    const textHeight = 14;
 
-    const padding = 8; // Espaçamento entre o texto e o fundo
-    const borderRadius = 3; // Raio da borda do retângulo de fundo
+    const padding = 8;
+    const borderRadius = 3;
 
-    // Calcular as coordenadas do retângulo de fundo
     const rectX = centroidX - textWidth / 2 - padding;
     const rectY = centroidY - textHeight / 2 - padding;
     const rectWidth = textWidth + 2 * padding;
     const rectHeight = textHeight + 2 * padding;
 
-    // Desenhar o retângulo de fundo amarelo com borda e borderRadius
     contextRef.current.fillStyle = color || "yellow";
-    contextRef.current.strokeStyle = contrastColors[color] || "black"; // Cor da borda
-    contextRef.current.lineWidth = 2; // Largura da borda
-    contextRef.current.lineJoin = "round"; // Estilo de junção da linha para borderRadius
+    contextRef.current.strokeStyle = contrastColors[color] || "black";
+    contextRef.current.lineWidth = 2;
+    contextRef.current.lineJoin = "round";
     contextRef.current.beginPath();
-    contextRef.current.moveTo(rectX + borderRadius, rectY); // Mover para o canto superior esquerdo
-    contextRef.current.lineTo(rectX + rectWidth - borderRadius, rectY); // Desenhar linha superior
+    contextRef.current.moveTo(rectX + borderRadius, rectY);
+    contextRef.current.lineTo(rectX + rectWidth - borderRadius, rectY);
     contextRef.current.quadraticCurveTo(
       rectX + rectWidth,
       rectY,
       rectX + rectWidth,
       rectY + borderRadius
-    ); // Curva superior direita
+    );
     contextRef.current.lineTo(
       rectX + rectWidth,
       rectY + rectHeight - borderRadius
-    ); // Desenhar linha direita
+    );
     contextRef.current.quadraticCurveTo(
       rectX + rectWidth,
       rectY + rectHeight,
       rectX + rectWidth - borderRadius,
       rectY + rectHeight
-    ); // Curva inferior direita
-    contextRef.current.lineTo(rectX + borderRadius, rectY + rectHeight); // Desenhar linha inferior
+    );
+    contextRef.current.lineTo(rectX + borderRadius, rectY + rectHeight);
     contextRef.current.quadraticCurveTo(
       rectX,
       rectY + rectHeight,
       rectX,
       rectY + rectHeight - borderRadius
-    ); // Curva inferior esquerda
+    );
     contextRef.current.lineTo(rectX, rectY + borderRadius); // Desenhar linha esquerda
     contextRef.current.quadraticCurveTo(
       rectX,
       rectY,
       rectX + borderRadius,
       rectY
-    ); // Curva superior esquerda
+    );
     contextRef.current.closePath();
-    contextRef.current.fill(); // Preencher o retângulo
-    contextRef.current.stroke(); // Desenhar a borda
+    contextRef.current.fill();
+    contextRef.current.stroke();
 
-    // Ajustar as coordenadas de desenho vertical do texto para centralizá-lo verticalmente
     const textX = centroidX;
-    const textY = centroidY + textHeight / 4; // Ajuste para centralizar verticalmente
+    const textY = centroidY + textHeight / 4;
 
-    // Desenhar o texto sobre o retângulo de fundo
     contextRef.current.font = "14px Arial";
     contextRef.current.fillStyle = "black";
     contextRef.current.textAlign = "center";
@@ -467,10 +493,62 @@ export default function ErgonomicAnalysis() {
     const text = prompt("Digite o texto:");
     if (!text) return;
 
+    const padding = 8;
+    const borderRadius = 3;
+
     contextRef.current.font = "bold 20px Arial";
-    contextRef.current.fillStyle = contrastColors[color] || "black";
+    const textWidth = contextRef.current.measureText(text).width;
+    const textHeight = 20;
+
+    const rectX = offsetX - textWidth / 2 - padding;
+    const rectY = offsetY - textHeight / 2 - padding;
+    const rectWidth = textWidth + 2 * padding;
+    const rectHeight = textHeight + 2 * padding;
+
+    contextRef.current.fillStyle = "yellow";
+    contextRef.current.strokeStyle = "black";
+    contextRef.current.lineWidth = 2;
+    contextRef.current.lineJoin = "round";
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(rectX + borderRadius, rectY);
+    contextRef.current.lineTo(rectX + rectWidth - borderRadius, rectY);
+    contextRef.current.quadraticCurveTo(
+      rectX + rectWidth,
+      rectY,
+      rectX + rectWidth,
+      rectY + borderRadius
+    );
+    contextRef.current.lineTo(
+      rectX + rectWidth,
+      rectY + rectHeight - borderRadius
+    );
+    contextRef.current.quadraticCurveTo(
+      rectX + rectWidth,
+      rectY + rectHeight,
+      rectX + rectWidth - borderRadius,
+      rectY + rectHeight
+    );
+    contextRef.current.lineTo(rectX + borderRadius, rectY + rectHeight);
+    contextRef.current.quadraticCurveTo(
+      rectX,
+      rectY + rectHeight,
+      rectX,
+      rectY + rectHeight - borderRadius
+    );
+    contextRef.current.lineTo(rectX, rectY + borderRadius);
+    contextRef.current.quadraticCurveTo(
+      rectX,
+      rectY,
+      rectX + borderRadius,
+      rectY
+    );
+    contextRef.current.closePath();
+    contextRef.current.fill();
+    contextRef.current.stroke();
+
+    contextRef.current.fillStyle = "black";
     contextRef.current.textAlign = "center";
-    contextRef.current.fillText(text, offsetX, offsetY);
+    contextRef.current.fillText(text, offsetX, offsetY + textHeight / 4);
 
     setIsDrawingTextMode(false);
   };
@@ -538,15 +616,18 @@ export default function ErgonomicAnalysis() {
       <ErgonomicAnalysisSubContainer>
         <Select
           options={[
-            { value: 0, label: "Selecione uma opção" },
-            { value: 1, label: "Opção 1" },
-            { value: 2, label: "Opção 2" },
+            { value: 0, label: "Selecione uma Análise" },
+            ...(listAnalyses
+              ? listAnalyses.map((analysis) => ({
+                  value: analysis?.id,
+                  label: `${analysis?.name_analysis}-${analysis?.method}`,
+                }))
+              : []),
           ]}
-          onChange={(e) => {}}
-          onBlur={() => {}}
+          value={selectedAnalysis}
+          onChange={(e) => setSelectedAnalysis(e.target.value)}
         />
-        <Button text="Abrir Análise" />
-        <Button text="Criar Análise (ScreenShot)" onClick={handleScreenshot} />
+        <Button text="Abrir Análise (ScreenShot)" onClick={handleScreenshot} />
       </ErgonomicAnalysisSubContainer>
       <InputFile type="file" accept="video/*" onChange={handleFileChange} />
       <StyledVideo
@@ -696,11 +777,20 @@ export default function ErgonomicAnalysis() {
             <NIOSHMethodComponent
               isSavedImage={isSavedImage}
               idProject={project_id}
+              analysis={analysisData && analysisData}
             />
           ) : selectedMethod == 2 ? (
-            <OWASMethodComponent />
+            <OWASMethodComponent
+              isSavedImage={isSavedImage}
+              idProject={project_id}
+              analysis={analysisData && analysisData}
+            />
           ) : selectedMethod == 3 ? (
-            <RULAMethodComponent />
+            <RULAMethodComponent
+              isSavedImage={isSavedImage}
+              idProject={project_id}
+              analysis={analysisData && analysisData}
+            />
           ) : (
             <h1>Selecione um método</h1>
           )}

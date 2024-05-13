@@ -1,5 +1,12 @@
+import { useContext, useEffect, useState } from "react";
 import Image from "next/image";
-import { useState } from "react";
+
+import { UserContext } from "@/context/UserContext";
+import {
+  createAnalysisFirebase,
+  updateAnalysisFirebase,
+} from "@/service/firebase";
+
 import { Select } from "@/components/Select";
 
 import ArmPosture1 from "@/assets/method/rula/arm-posture-01.png";
@@ -25,9 +32,15 @@ import TrunkPosture4 from "@/assets/method/rula/trunk-posture-04.png";
 import TrunkPosture5 from "@/assets/method/rula/trunk-posture-05.png";
 import TrunkPosture6 from "@/assets/method/rula/trunk-posture-06.png";
 
-export const RULAMethodComponent = ({ content }) => {
+export const RULAMethodComponent = ({
+  content,
+  idAnalysis,
+  idProject,
+  isSavedImage,
+  analysisData,
+}) => {
+  const { data } = useContext(UserContext);
   const [nameAnalysis, setNameAnalysis] = useState("");
-
   const [armPosture, setArmPosture] = useState(0);
   const [forearmPosture, setForearmPosture] = useState(0);
   const [fistPosture, setFistPosture] = useState(0);
@@ -108,6 +121,253 @@ export const RULAMethodComponent = ({ content }) => {
       { value: 6, label: "Há força bruta ou repentina" },
     ],
   };
+
+  const [rulaResult, setRulaResult] = useState(null);
+
+  const result = rulaResult || { message: "", color: "" };
+
+  useEffect(() => {
+    if (analysisData) {
+      setNameAnalysis(analysisData.name_analysis);
+      setRulaResult(analysisData.result);
+      setArmPosture(analysisData.arm_posture);
+      setForearmPosture(analysisData.forearm_posture);
+      setFistPosture(analysisData.fist_posture);
+      setTrunkPosture(analysisData.trunk_posture);
+      setGruoupA(analysisData.group_a);
+      setLoadGruoupA(analysisData.load_group_a);
+      setGruoupB(analysisData.group_b);
+      setLoadGruoupB(analysisData.load_group_b);
+    }
+  }, [analysisData]);
+
+  function clearRULAResult() {
+    setNameAnalysis("");
+    setArmPosture(0);
+    setForearmPosture(0);
+    setFistPosture(0);
+    setTrunkPosture(0);
+    setGruoupA(0);
+    setLoadGruoupA(0);
+    setGruoupB(0);
+    setLoadGruoupB(0);
+    setRulaResult("");
+  }
+
+  function calculateRULAResult() {
+    if (
+      !nameAnalysis ||
+      !armPosture ||
+      !forearmPosture ||
+      !fistPosture ||
+      !trunkPosture ||
+      !gruoupA ||
+      !loadGruoupA ||
+      !gruoupB ||
+      !loadGruoupB
+    )
+      return;
+
+    const armPostureValue = parseInt(armPosture);
+    const forearmPostureValue = parseInt(forearmPosture);
+    const fistPostureValue = parseInt(fistPosture);
+    const trunkPostureValue = parseInt(trunkPosture);
+    const gruoupAValue = parseInt(gruoupA);
+    const loadGruoupAValue = parseInt(loadGruoupA);
+    const gruoupBValue = parseInt(gruoupB);
+    const loadGruoupBValue = parseInt(loadGruoupB);
+
+    const rulaTable = [
+      [
+        [1, 1, 1, 2, 2, 3],
+        [1, 1, 2, 2, 3, 3],
+        [1, 1, 2, 3, 3, 4],
+        [2, 2, 3, 3, 4, 5],
+        [2, 2, 3, 4, 4, 5],
+        [3, 3, 4, 5, 5, 6],
+      ],
+      [
+        [1, 1, 1, 2, 2, 3],
+        [1, 1, 2, 2, 3, 3],
+        [1, 2, 2, 3, 3, 4],
+        [2, 2, 3, 3, 4, 5],
+        [2, 3, 3, 4, 5, 5],
+        [3, 3, 4, 5, 6, 7],
+      ],
+      [
+        [1, 1, 1, 2, 2, 3],
+        [1, 1, 2, 2, 3, 3],
+        [1, 2, 2, 3, 4, 5],
+        [2, 2, 3, 4, 5, 6],
+        [2, 3, 3, 4, 5, 6],
+        [3, 3, 4, 5, 6, 7],
+      ],
+      [
+        [1, 1, 1, 2, 2, 3],
+        [1, 1, 2, 3, 3, 4],
+        [1, 2, 3, 3, 4, 5],
+        [2, 2, 3, 4, 5, 6],
+        [2, 3, 4, 4, 5, 6],
+        [3, 3, 4, 5, 6, 7],
+      ],
+      [
+        [1, 1, 1, 2, 2, 3],
+        [1, 1, 2, 3, 3, 4],
+        [1, 2, 3, 3, 4, 5],
+        [2, 2, 3, 4, 5, 6],
+        [2, 3, 4, 4, 5, 6],
+        [3, 3, 4, 5, 6, 7],
+      ],
+      [
+        [1, 1, 1, 2, 2, 3],
+        [1, 1, 2, 3, 3, 4],
+        [1, 2, 3, 3, 4, 5],
+        [2, 2, 3, 4, 5, 6],
+        [2, 3, 4, 4, 5, 6],
+        [3, 3, 4, 5, 6, 7],
+      ],
+    ];
+
+    const postureArray = [
+      armPostureValue,
+      forearmPostureValue,
+      fistPostureValue,
+      trunkPostureValue,
+    ];
+    const groupAArray = [gruoupAValue, loadGruoupAValue];
+    const groupBArray = [gruoupBValue, loadGruoupBValue];
+
+    const postureIndex = Math.max(...postureArray) - 1;
+    const groupAIndex = groupAArray.reduce((acc, val) => acc + val, 0) - 1;
+    const groupBIndex = groupBArray.reduce((acc, val) => acc + val, 0) - 1;
+
+    if (
+      postureIndex < 0 ||
+      postureIndex >= rulaTable.length ||
+      groupAIndex < 0 ||
+      groupAIndex >= rulaTable[0].length ||
+      groupBIndex < 0 ||
+      groupBIndex >= rulaTable[0][0].length
+    ) {
+      return "Valores inválidos.";
+    }
+
+    const rulaScore = rulaTable[postureIndex][groupAIndex][groupBIndex];
+
+    let result = "";
+    switch (rulaScore) {
+      case 1:
+        result = {
+          score: rulaScore,
+          message: "Postura aceitável; sem necessidade de mudanças.",
+          color: "green",
+        };
+        break;
+      case 2:
+        result = {
+          score: rulaScore,
+          message:
+            "Postura aceitável, mas devem ser monitoradas; considere mudanças.",
+          color: "yellow",
+        };
+        break;
+      case 3:
+        result = {
+          score: rulaScore,
+          message:
+            "Postura não aceitável; mudanças necessárias e devem ser feitas o quanto antes.",
+          color: "orange",
+        };
+        break;
+      case 4:
+        result = {
+          score: rulaScore,
+          message: "Postura inaceitável; mudanças urgentes necessárias.",
+          color: "red",
+        };
+        break;
+      case 5:
+        result = {
+          score: rulaScore,
+          message: "Postura inaceitável; mudanças urgentes necessárias.",
+          color: "red",
+        };
+        break;
+      case 6:
+        result = {
+          score: rulaScore,
+          message: "Postura inaceitável; mudanças urgentes necessárias.",
+          color: "red",
+        };
+        break;
+      case 7:
+        result = {
+          score: rulaScore,
+          message: "Postura inaceitável; mudanças urgentes necessárias.",
+          color: "red",
+        };
+        break;
+      default:
+        result = "Resultado não definido.";
+    }
+
+    setRulaResult(result);
+  }
+
+  async function saveRULAResult() {
+    if (
+      !rulaResult ||
+      !nameAnalysis ||
+      !armPosture ||
+      !forearmPosture ||
+      !fistPosture ||
+      !trunkPosture ||
+      !gruoupA ||
+      !loadGruoupA ||
+      !gruoupB ||
+      !loadGruoupB
+    )
+      return;
+
+    if (!isSavedImage) {
+      const confirm = window.confirm("Deseja continuar sem salvar a imagem?");
+      if (!confirm) return;
+    }
+
+    if (analysisData) {
+      await updateAnalysisFirebase(data.uid, idProject, analysisData.id, {
+        method: "RULA",
+        name_analysis: nameAnalysis,
+        result: rulaResult,
+        arm_posture: armPosture,
+        forearm_posture: forearmPosture,
+        fist_posture: fistPosture,
+        trunk_posture: trunkPosture,
+        group_a: gruoupA,
+        load_group_a: loadGruoupA,
+        group_b: gruoupB,
+        load_group_b: loadGruoupB,
+      });
+    } else {
+      await createAnalysisFirebase(data.uid, idProject, {
+        method: "RULA",
+        name_analysis: nameAnalysis,
+        result: rulaResult,
+        arm_posture: armPosture,
+        forearm_posture: forearmPosture,
+        fist_posture: fistPosture,
+        trunk_posture: trunkPosture,
+        group_a: gruoupA,
+        load_group_a: loadGruoupA,
+        group_b: gruoupB,
+        load_group_b: loadGruoupB,
+      });
+    }
+  }
+
+  useEffect(() => {
+    clearRULAResult();
+  }, [idAnalysis]);
 
   if (content === "help") {
     return (
@@ -200,12 +460,15 @@ export const RULAMethodComponent = ({ content }) => {
   } else {
     return (
       <div className="input-container">
-        <input
-          type="text"
-          placeholder="Nome da Análise"
-          value={nameAnalysis}
-          onChange={(e) => setNameAnalysis(e.target.value)}
-        />
+        <div className="input-with-label">
+          <label htmlFor="name-analysis">Nome da Análise</label>
+          <input
+            id="name-analysis"
+            type="text"
+            value={nameAnalysis}
+            onChange={(e) => setNameAnalysis(e.target.value)}
+          />
+        </div>
         <Select
           options={options.armPosture}
           value={armPosture}
@@ -246,9 +509,43 @@ export const RULAMethodComponent = ({ content }) => {
           value={loadGruoupB}
           onChange={(e) => setLoadGruoupB(e.target.value)}
         />
-        <button>Gerar Resultado</button>
-        <button>Salvar Análise</button>
-        <input type="text" placeholder="Resultado ..." disabled />
+        <button
+          onClick={calculateRULAResult}
+          disabled={
+            !nameAnalysis ||
+            !armPosture ||
+            !forearmPosture ||
+            !fistPosture ||
+            !trunkPosture ||
+            !gruoupA ||
+            !loadGruoupA ||
+            !gruoupB ||
+            !loadGruoupB
+              ? true
+              : false
+          }
+        >
+          Gerar Resultado
+        </button>
+        <button onClick={saveRULAResult}>Salvar Análise</button>
+        <input
+          type="text"
+          placeholder="Resultado ..."
+          value={result.message}
+          style={
+            result.color
+              ? {
+                  height: "4.0625rem",
+                  color: "black",
+                  fontWeight: "bold",
+                  overflowWrap: "break-word",
+                  backgroundColor: result.color,
+                  resize: "none",
+                }
+              : {}
+          }
+          disabled
+        />
       </div>
     );
   }

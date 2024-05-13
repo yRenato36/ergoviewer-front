@@ -327,3 +327,54 @@ export const createAnalysisFirebase = async (uid, projectId, analysisData) => {
     return false;
   }
 };
+
+export const getAllAnalysesFirebase = async (uid, projectId) => {
+  try {
+    const analysisCollectionRef = collection(
+      db,
+      "users",
+      uid,
+      "projects",
+      projectId,
+      "analyses"
+    );
+
+    const snapshot = await getDocs(analysisCollectionRef);
+
+    const analyses = [];
+    snapshot.forEach((doc) => {
+      analyses.push({ id: doc.id, ...doc.data() });
+    });
+
+    return analyses;
+  } catch (error) {
+    console.error("Erro ao buscar análises:", error);
+    return [];
+  }
+};
+
+export const updateAnalysisFirebase = async (
+  uid,
+  projectId,
+  analysisId,
+  newData
+) => {
+  try {
+    const analysisDocRef = doc(
+      db,
+      "users",
+      uid,
+      "projects",
+      projectId,
+      "analyses",
+      analysisId
+    );
+
+    await updateDoc(analysisDocRef, newData);
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao atualizar análise:", error);
+    return false;
+  }
+};

@@ -304,6 +304,22 @@ export const ModalAnalysisContent = styled("div", {
     },
   },
 
+  label: {
+    fontSize: "0.75rem",
+    fontWeight: 400,
+
+    position: "absolute",
+    top: -5,
+    left: 10,
+
+    backgroundColor: "$white",
+  },
+
+  ".input-with-label": {
+    width: "100%",
+    position: "relative",
+  },
+
   ".small-component": {
     width: "max-content",
   },

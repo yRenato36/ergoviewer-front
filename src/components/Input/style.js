@@ -21,3 +21,11 @@ export const InputComponent = styled("input", {
     borderColor: "$darkPrimary",
   },
 });
+
+export const LabelComponent = styled("label", {
+  fontSize: "0.75rem",
+  fontWeight: 700,
+
+  display: "block", // Para que a label apareça acima do input
+  marginBottom: "0.25rem",
+});

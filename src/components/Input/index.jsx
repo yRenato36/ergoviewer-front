@@ -3,18 +3,20 @@ import { Error } from "../Error";
 
 export const Input = ({
   type,
-  placeholder,
   value,
+  label,
+  placeholder,
   onChange,
   onBlur,
   error,
 }) => {
   return (
     <InputContainer>
+      {label && <LabelComponent>{label}</LabelComponent>}
       <InputComponent
         type={type}
-        placeholder={placeholder}
         value={value}
+        placeholder={placeholder}
         onBlur={onBlur}
         onChange={onChange}
       />
