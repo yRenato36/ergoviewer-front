@@ -35,44 +35,6 @@ export default function ErgonomicAnalysis() {
   const { data } = useContext(UserContext);
 
   const [loading, setLoading] = useState(false);
-  const [listAnalyses, setListAnalyses] = useState([]);
-  const [analysisData, setAnalysisData] = useState(null);
-  const [selectedAnalysis, setSelectedAnalysis] = useState(0);
-
-  let optionsAnalysis = [];
-
-  async function fetchDataAnalysis() {
-    setLoading(true);
-    if (data) {
-      const listAnalysisData = await getAllAnalysesFirebase(
-        data.uid,
-        project_id
-      );
-      setListAnalyses(listAnalysisData);
-      if (listAnalysisData) {
-        optionsAnalysis.push(
-          listAnalysisData.map((analysis) => {
-            return {
-              value: analysis.id,
-              label: `${analysis.name_analysis + "-" + analysis.method}`,
-            };
-          })
-        );
-      } else {
-        router.push("/projects");
-      }
-    }
-    console.log("Options", optionsAnalysis);
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    fetchDataAnalysis();
-  }, [data]);
-
-  useEffect(() => {
-    setAnalysisData(listAnalyses[selectedAnalysis]);
-  }, [listAnalyses]);
 
   const videoRef = useRef(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -86,19 +48,6 @@ export default function ErgonomicAnalysis() {
     { value: 2, label: "Método OWAS" },
     { value: 3, label: "Método RULA" },
   ];
-
-  useEffect(() => {
-    if (analysisData) {
-      console.log(analysisData);
-      setSelectedMethod(
-        optionsMethods.forEach((options) => {
-          if (options.label.includes(analysisData.method)) {
-            setSelectedMethod(options.value);
-          }
-        })
-      );
-    }
-  }, [analysisData]);
 
   const [isOpenHelp, setIsOpenHelp] = useState(false);
 
@@ -302,7 +251,7 @@ export default function ErgonomicAnalysis() {
 
     const distanceInPixels = Math.sqrt(
       Math.pow(secondPointDistance.x - firstPointDistance.x, 2) +
-        Math.pow(secondPointDistance.y - firstPointDistance.y, 2)
+      Math.pow(secondPointDistance.y - firstPointDistance.y, 2)
     );
 
     const distanceInMeters = distanceInPixels * scaleFactor;
@@ -611,23 +560,15 @@ export default function ErgonomicAnalysis() {
   return (
     <ErgonomicAnalysisContainer>
       <ErgonomicAnalysisSubContainer>
-        <Button text="Criar ou Editar Documento" />
+        <Button
+          text="Criar ou Editar Documento"
+          onClick={() => {
+            router.push(`/document/${project_id}`);
+          }}
+        />
       </ErgonomicAnalysisSubContainer>
       <ErgonomicAnalysisSubContainer>
-        <Select
-          options={[
-            { value: 0, label: "Selecione uma Análise" },
-            ...(listAnalyses
-              ? listAnalyses.map((analysis) => ({
-                  value: analysis?.id,
-                  label: `${analysis?.name_analysis}-${analysis?.method}`,
-                }))
-              : []),
-          ]}
-          value={selectedAnalysis}
-          onChange={(e) => setSelectedAnalysis(e.target.value)}
-        />
-        <Button text="Abrir Análise (ScreenShot)" onClick={handleScreenshot} />
+        <Button text="Criar Análise (ScreenShot)" onClick={handleScreenshot} />
       </ErgonomicAnalysisSubContainer>
       <InputFile type="file" accept="video/*" onChange={handleFileChange} />
       <StyledVideo
@@ -678,21 +619,21 @@ export default function ErgonomicAnalysis() {
                 isDrawingMode
                   ? startDrawing
                   : isMeasuringDistanceMode
-                  ? startMeasuringDistance
-                  : isMeasuringAngleMode
-                  ? startMeasuringAngle
-                  : isDrawingTextMode
-                  ? startDrawText
-                  : null
+                    ? startMeasuringDistance
+                    : isMeasuringAngleMode
+                      ? startMeasuringAngle
+                      : isDrawingTextMode
+                        ? startDrawText
+                        : null
               }
               onMouseUp={
                 isDrawingMode
                   ? finishDrawing
                   : isMeasuringDistanceMode
-                  ? endMeasuringDistance
-                  : isMeasuringAngleMode
-                  ? endMeasuringAngle
-                  : null
+                    ? endMeasuringDistance
+                    : isMeasuringAngleMode
+                      ? endMeasuringAngle
+                      : null
               }
               onMouseMove={isDrawingMode ? draw : null}
               ref={canvasRef}
@@ -777,19 +718,16 @@ export default function ErgonomicAnalysis() {
             <NIOSHMethodComponent
               isSavedImage={isSavedImage}
               idProject={project_id}
-              analysis={analysisData && analysisData}
             />
           ) : selectedMethod == 2 ? (
             <OWASMethodComponent
               isSavedImage={isSavedImage}
               idProject={project_id}
-              analysis={analysisData && analysisData}
             />
           ) : selectedMethod == 3 ? (
             <RULAMethodComponent
               isSavedImage={isSavedImage}
               idProject={project_id}
-              analysis={analysisData && analysisData}
             />
           ) : (
             <h1>Selecione um método</h1>

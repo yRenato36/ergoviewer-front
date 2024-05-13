@@ -4,6 +4,7 @@ import { Button } from "@/components/Button";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import {
+  getAllAnalysesFirebase,
   getProjectById,
   updateProjectContent,
   uploadPdfToStorage,
@@ -11,6 +12,7 @@ import {
 import { UserContext } from "@/context/UserContext";
 import { InputFile } from "@/components/InputFile";
 import { Modal } from "@/components/Modal";
+import { Select } from "@/components/Select";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -28,6 +30,10 @@ export default function CreateDocument() {
 
   const [content, setContent] = useState();
   const [project, setProject] = useState({});
+
+  const [isOpenAnalysis, setIsOpenAnalysis] = useState(false);
+  const [analyses, setAnalyses] = useState([]);
+  const [selectedAnalysis, setSelectedAnalysis] = useState();
 
   const handleFileSave = async (file) => {
     if (file && data) {
@@ -93,10 +99,41 @@ export default function CreateDocument() {
     };
 
     fetchDataProject();
+
+    const fetchDataAnalysis = async () => {
+      setLoading(true);
+      try {
+        if (data) {
+          const listAnalysis = await getAllAnalysesFirebase(data.uid, project_id);
+          setAnalyses(listAnalysis);
+        }
+      } catch (error) {
+        console.error("Error fetching analysis data:", error);
+      }
+      setLoading(false);
+    }
+
+    fetchDataAnalysis();
   }, [data, project_id]);
 
   return (
     <DocumentContainer>
+      <div className="analysis-container">
+        <Button
+          type="button"
+          text="Nova Análise"
+          disabled={loading}
+          onClick={() => {
+            router.push(`/ergonomic-analysis/${project_id}`);
+          }}
+        />
+        <Button
+          type="button"
+          text="Abrir Análises"
+          disabled={loading}
+          onClick={() => setIsOpenAnalysis(true)}
+        />
+      </div>
       <Editor
         style={{ maxHeight: "680px" }}
         apiKey="a6100r4ea397xtzqepersskopwhjdma3wlpyb6zr3jrwv1xf"
@@ -194,6 +231,22 @@ export default function CreateDocument() {
           <InputFile accept=".pdf" onChange={(file) => setFileSave(file)} />
         </div>
         <button type="submit">Salvar</button>
+      </Modal>
+      <Modal
+        isOpen={isOpenAnalysis}
+        onClose={() => {
+          setIsOpenAnalysis(!isOpenAnalysis);
+        }}
+        onSubmit={() => {
+          setIsOpenAnalysis(!isOpenAnalysis);
+        }}
+      >
+        <h1>Análises Ergonômicas</h1>
+        {analyses.map((analysis) => (
+          <div key={analysis.id}>
+            <p>{analysis.name_analysis}</p>
+          </div>
+        ))}
       </Modal>
     </DocumentContainer>
   );

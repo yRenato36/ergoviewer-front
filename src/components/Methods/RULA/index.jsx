@@ -32,12 +32,84 @@ import TrunkPosture4 from "@/assets/method/rula/trunk-posture-04.png";
 import TrunkPosture5 from "@/assets/method/rula/trunk-posture-05.png";
 import TrunkPosture6 from "@/assets/method/rula/trunk-posture-06.png";
 
+export const options = {
+  armPosture: [
+    { value: 0, label: "Selecione uma opção de Postura dos Braços" },
+    { value: 1, label: "+ 20 graus para trás do abdômen" },
+    { value: 2, label: "20 graus para trás e para frente do abdômen" },
+    { value: 3, label: "Entre 20 e 45 graus para frente do abdômen" },
+    { value: 4, label: "Entre 45 e 90 graus para frente do abdômen" },
+    { value: 5, label: "+ 90 graus para frente do abdômen" },
+  ],
+  forearmPosture: [
+    { value: 0, label: "Selecione uma opção de Postura dos Antebraços" },
+    { value: 1, label: "Entre 0 e 60 graus para frente do braço" },
+    { value: 2, label: "Entre 60 e 100 graus para frente do braço" },
+    { value: 3, label: "+ 100 graus para frente do braço" },
+    { valeu: 4, label: "Com o braço dobrado e para os lados" },
+  ],
+  fistPosture: [
+    { value: 0, label: "Selecione uma opção de Postura dos Punhos" },
+    { value: 1, label: "Punho reto (0 graus)" },
+    { value: 2, label: "Entre 15 graus para cima e para baixo" },
+    { value: 3, label: "+ 15 graus para cima" },
+    { value: 4, label: "+ 15 graus para baixo" },
+    { value: 5, label: "Punho reto para os lados" },
+    { value: 6, label: "Punho reto com polegar para cima" },
+    { value: 7, label: "Punho reto com polegar para baixo ou para os lados" },
+  ],
+  trunkPosture: [
+    { value: 0, label: "Selecione uma opção de Postura do Tronco" },
+    { value: 1, label: "Tronco reto (0 graus)" },
+    { value: 2, label: "Entre 0 e 20 graus inclinado para frente" },
+    { value: 3, label: "Entre 20 e 60 graus inclinado para frente" },
+    { value: 4, label: "+ 60 graus inclinado para frente" },
+    { value: 5, label: "Tronco inclinado para os lados" },
+    { value: 6, label: "Tronco torcido para os lados" },
+  ],
+  gruoupA: [
+    { value: 0, label: "Selecione uma opção de Grupo A" },
+    { value: 1, label: "Nenhuma das opções" },
+    {
+      value: 2,
+      label:
+        "Postura estática mantida por período superior a 1 min ou postura repetitiva, mais que 4 vezes/min",
+    },
+  ],
+  loadGruoupA: [
+    { value: 0, label: "Selecione uma opção de Carga do Grupo A" },
+    { value: 1, label: "Sem carga ou carga menor que 2 Kg intermitente" },
+    { value: 2, label: "Carga entre 2 e 10 Kg intermitente" },
+    { value: 3, label: "Carga entre 2 e 10 Kg estática ou repetitiva" },
+    { value: 4, label: "Carga superior a 10 Kg intermitente" },
+    { value: 5, label: "Carga superior a 10 Kg estática ou repetitiva" },
+    { value: 6, label: "Há força bruta ou repentina" },
+  ],
+  gruoupB: [
+    { value: 0, label: "Selecione uma opção de Grupo B" },
+    { value: 1, label: "Nenhuma das opções" },
+    {
+      value: 2,
+      label:
+        "Postura estática mantida por período superior a 1 min ou postura repetitiva, mais que 4 vezes/min.",
+    },
+  ],
+  loadGruoupB: [
+    { value: 0, label: "Selecione uma opção de Carga do Grupo B" },
+    { value: 1, label: "Sem carga ou carga menor que 2 Kg intermitente" },
+    { value: 2, label: "Carga entre 2 e 10 Kg intermitente" },
+    { value: 3, label: "Carga entre 2 e 10 Kg estática ou repetitiva" },
+    { value: 4, label: "Carga superior a 10 Kg intermitente" },
+    { value: 5, label: "Carga superior a 10 Kg estática ou repetitiva" },
+    { value: 6, label: "Há força bruta ou repentina" },
+  ],
+};
+
 export const RULAMethodComponent = ({
   content,
   idAnalysis,
   idProject,
   isSavedImage,
-  analysisData,
 }) => {
   const { data } = useContext(UserContext);
   const [nameAnalysis, setNameAnalysis] = useState("");
@@ -49,98 +121,10 @@ export const RULAMethodComponent = ({
   const [loadGruoupA, setLoadGruoupA] = useState(0);
   const [gruoupB, setGruoupB] = useState(0);
   const [loadGruoupB, setLoadGruoupB] = useState(0);
-  const options = {
-    armPosture: [
-      { value: 0, label: "Selecione uma opção de Postura dos Braços" },
-      { value: 1, label: "+ 20 graus para trás do abdômen" },
-      { value: 2, label: "20 graus para trás e para frente do abdômen" },
-      { value: 3, label: "Entre 20 e 45 graus para frente do abdômen" },
-      { value: 4, label: "Entre 45 e 90 graus para frente do abdômen" },
-      { value: 5, label: "+ 90 graus para frente do abdômen" },
-    ],
-    forearmPosture: [
-      { value: 0, label: "Selecione uma opção de Postura dos Antebraços" },
-      { value: 1, label: "Entre 0 e 60 graus para frente do braço" },
-      { value: 2, label: "Entre 60 e 100 graus para frente do braço" },
-      { value: 3, label: "+ 100 graus para frente do braço" },
-      { valeu: 4, label: "Com o braço dobrado e para os lados" },
-    ],
-    fistPosture: [
-      { value: 0, label: "Selecione uma opção de Postura dos Punhos" },
-      { value: 1, label: "Punho reto (0 graus)" },
-      { value: 2, label: "Entre 15 graus para cima e para baixo" },
-      { value: 3, label: "+ 15 graus para cima" },
-      { value: 4, label: "+ 15 graus para baixo" },
-      { value: 5, label: "Punho reto para os lados" },
-      { value: 6, label: "Punho reto com polegar para cima" },
-      { value: 7, label: "Punho reto com polegar para baixo ou para os lados" },
-    ],
-    trunkPosture: [
-      { value: 0, label: "Selecione uma opção de Postura do Tronco" },
-      { value: 1, label: "Tronco reto (0 graus)" },
-      { value: 2, label: "Entre 0 e 20 graus inclinado para frente" },
-      { value: 3, label: "Entre 20 e 60 graus inclinado para frente" },
-      { value: 4, label: "+ 60 graus inclinado para frente" },
-      { value: 5, label: "Tronco inclinado para os lados" },
-      { value: 6, label: "Tronco torcido para os lados" },
-    ],
-    gruoupA: [
-      { value: 0, label: "Selecione uma opção de Grupo A" },
-      { value: 1, label: "Nenhuma das opções" },
-      {
-        value: 2,
-        label:
-          "Postura estática mantida por período superior a 1 min ou postura repetitiva, mais que 4 vezes/min",
-      },
-    ],
-    loadGruoupA: [
-      { value: 0, label: "Selecione uma opção de Carga do Grupo A" },
-      { value: 1, label: "Sem carga ou carga menor que 2 Kg intermitente" },
-      { value: 2, label: "Carga entre 2 e 10 Kg intermitente" },
-      { value: 3, label: "Carga entre 2 e 10 Kg estática ou repetitiva" },
-      { value: 4, label: "Carga superior a 10 Kg intermitente" },
-      { value: 5, label: "Carga superior a 10 Kg estática ou repetitiva" },
-      { value: 6, label: "Há força bruta ou repentina" },
-    ],
-    gruoupB: [
-      { value: 0, label: "Selecione uma opção de Grupo B" },
-      { value: 1, label: "Nenhuma das opções" },
-      {
-        value: 2,
-        label:
-          "Postura estática mantida por período superior a 1 min ou postura repetitiva, mais que 4 vezes/min.",
-      },
-    ],
-    loadGruoupB: [
-      { value: 0, label: "Selecione uma opção de Carga do Grupo B" },
-      { value: 1, label: "Sem carga ou carga menor que 2 Kg intermitente" },
-      { value: 2, label: "Carga entre 2 e 10 Kg intermitente" },
-      { value: 3, label: "Carga entre 2 e 10 Kg estática ou repetitiva" },
-      { value: 4, label: "Carga superior a 10 Kg intermitente" },
-      { value: 5, label: "Carga superior a 10 Kg estática ou repetitiva" },
-      { value: 6, label: "Há força bruta ou repentina" },
-    ],
-  };
 
   const [rulaResult, setRulaResult] = useState(null);
 
   const result = rulaResult || { message: "", color: "" };
-
-  useEffect(() => {
-    if (analysisData) {
-      setNameAnalysis(analysisData.name_analysis);
-      setRulaResult(analysisData.result);
-      setArmPosture(analysisData.arm_posture);
-      setForearmPosture(analysisData.forearm_posture);
-      setFistPosture(analysisData.fist_posture);
-      setTrunkPosture(analysisData.trunk_posture);
-      setGruoupA(analysisData.group_a);
-      setLoadGruoupA(analysisData.load_group_a);
-      setGruoupB(analysisData.group_b);
-      setLoadGruoupB(analysisData.load_group_b);
-    }
-  }, [analysisData]);
-
   function clearRULAResult() {
     setNameAnalysis("");
     setArmPosture(0);
@@ -333,36 +317,20 @@ export const RULAMethodComponent = ({
       const confirm = window.confirm("Deseja continuar sem salvar a imagem?");
       if (!confirm) return;
     }
-
-    if (analysisData) {
-      await updateAnalysisFirebase(data.uid, idProject, analysisData.id, {
-        method: "RULA",
-        name_analysis: nameAnalysis,
-        result: rulaResult,
-        arm_posture: armPosture,
-        forearm_posture: forearmPosture,
-        fist_posture: fistPosture,
-        trunk_posture: trunkPosture,
-        group_a: gruoupA,
-        load_group_a: loadGruoupA,
-        group_b: gruoupB,
-        load_group_b: loadGruoupB,
-      });
-    } else {
-      await createAnalysisFirebase(data.uid, idProject, {
-        method: "RULA",
-        name_analysis: nameAnalysis,
-        result: rulaResult,
-        arm_posture: armPosture,
-        forearm_posture: forearmPosture,
-        fist_posture: fistPosture,
-        trunk_posture: trunkPosture,
-        group_a: gruoupA,
-        load_group_a: loadGruoupA,
-        group_b: gruoupB,
-        load_group_b: loadGruoupB,
-      });
-    }
+    
+    await createAnalysisFirebase(data.uid, idProject, {
+      method: "RULA",
+      name_analysis: nameAnalysis,
+      result: rulaResult,
+      arm_posture: armPosture,
+      forearm_posture: forearmPosture,
+      fist_posture: fistPosture,
+      trunk_posture: trunkPosture,
+      group_a: gruoupA,
+      load_group_a: loadGruoupA,
+      group_b: gruoupB,
+      load_group_b: loadGruoupB,
+    });
   }
 
   useEffect(() => {
@@ -513,14 +481,14 @@ export const RULAMethodComponent = ({
           onClick={calculateRULAResult}
           disabled={
             !nameAnalysis ||
-            !armPosture ||
-            !forearmPosture ||
-            !fistPosture ||
-            !trunkPosture ||
-            !gruoupA ||
-            !loadGruoupA ||
-            !gruoupB ||
-            !loadGruoupB
+              !armPosture ||
+              !forearmPosture ||
+              !fistPosture ||
+              !trunkPosture ||
+              !gruoupA ||
+              !loadGruoupA ||
+              !gruoupB ||
+              !loadGruoupB
               ? true
               : false
           }
@@ -535,13 +503,13 @@ export const RULAMethodComponent = ({
           style={
             result.color
               ? {
-                  height: "4.0625rem",
-                  color: "black",
-                  fontWeight: "bold",
-                  overflowWrap: "break-word",
-                  backgroundColor: result.color,
-                  resize: "none",
-                }
+                height: "4.0625rem",
+                color: "black",
+                fontWeight: "bold",
+                overflowWrap: "break-word",
+                backgroundColor: result.color,
+                resize: "none",
+              }
               : {}
           }
           disabled

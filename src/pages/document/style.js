@@ -14,6 +14,15 @@ export const DocumentContainer = styled("main", {
   justifyContent: "center",
 
   gap: "1.25rem",
+
+  ".analysis-container": {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "1.25rem",
+  },
 });
 
 export const DocumentSubContainer = styled("div", {

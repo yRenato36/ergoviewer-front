@@ -24,6 +24,38 @@ import HighLoad1 from "@/assets/method/owas/high-load-01.png";
 import HighLoad2 from "@/assets/method/owas/high-load-02.png";
 import HighLoad3 from "@/assets/method/owas/high-load-03.png";
 
+export const options = {
+  armPosture: [
+    { value: 0, label: "Selecione uma opção de Postura dos Braços" },
+    { value: 1, label: "Os dois braços abaixo dos ombros" },
+    { value: 2, label: "Um braço no nível ou acima dos ombros" },
+    { value: 3, label: "Ambos os braços no nível ou acima dos ombros" },
+  ],
+  backPosture: [
+    { value: 0, label: "Selecione uma opção de Postura das Costas" },
+    { value: 1, label: "Postura ereta" },
+    { value: 2, label: "Postura inclinada" },
+    { value: 3, label: "Postura ereta e torcida" },
+    { value: 4, label: "Postura inclinada e torcida" },
+  ],
+  legPosture: [
+    { value: 0, label: "Selecione uma opção de Postura das Pernas" },
+    { value: 1, label: "Sentado" },
+    { value: 2, label: "De pé com ambas as pernas esticadas" },
+    { value: 3, label: "De pé com uma das pernas esticada" },
+    { value: 4, label: "De pé com ambos os joelhos dobrados" },
+    { value: 5, label: "De pé com um dos joelhos dobrados" },
+    { value: 6, label: "Ajoelhado com ambos os joelhos" },
+    { value: 7, label: "Andando ou se movendo" },
+  ],
+  highLoad: [
+    { value: 0, label: "Selecione uma opção do Nivel de Carga" },
+    { value: 1, label: "Menor que 10kg" },
+    { value: 2, label: "Entre 10kg e 20kg" },
+    { value: 3, label: "Maior que 20kg" },
+  ],
+};
+
 export const OWASMethodComponent = ({
   content,
   idAnalysis,
@@ -45,38 +77,6 @@ export const OWASMethodComponent = ({
   const [OWASResult, setOWASResult] = useState();
 
   const result = OWASResult || { message: "", color: "" };
-
-  const options = {
-    armPosture: [
-      { value: 0, label: "Selecione uma opção de Postura dos Braços" },
-      { value: 1, label: "Os dois braços abaixo dos ombros" },
-      { value: 2, label: "Um braço no nível ou acima dos ombros" },
-      { value: 3, label: "Ambos os braços no nível ou acima dos ombros" },
-    ],
-    backPosture: [
-      { value: 0, label: "Selecione uma opção de Postura das Costas" },
-      { value: 1, label: "Postura ereta" },
-      { value: 2, label: "Postura inclinada" },
-      { value: 3, label: "Postura ereta e torcida" },
-      { value: 4, label: "Postura inclinada e torcida" },
-    ],
-    legPosture: [
-      { value: 0, label: "Selecione uma opção de Postura das Pernas" },
-      { value: 1, label: "Sentado" },
-      { value: 2, label: "De pé com ambas as pernas esticadas" },
-      { value: 3, label: "De pé com uma das pernas esticada" },
-      { value: 4, label: "De pé com ambos os joelhos dobrados" },
-      { value: 5, label: "De pé com um dos joelhos dobrados" },
-      { value: 6, label: "Ajoelhado com ambos os joelhos" },
-      { value: 7, label: "Andando ou se movendo" },
-    ],
-    highLoad: [
-      { value: 0, label: "Selecione uma opção do Nivel de Carga" },
-      { value: 1, label: "Menor que 10kg" },
-      { value: 2, label: "Entre 10kg e 20kg" },
-      { value: 3, label: "Maior que 20kg" },
-    ],
-  };
 
   function clearOWASResult() {
     setArmPosture(0);
