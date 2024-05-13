@@ -188,10 +188,71 @@ export default function ErgonomicAnalysis() {
   const drawDistanceText = (startPointDistance, endPointDistance, distance) => {
     const midPointX = (startPointDistance.x + endPointDistance.x) / 2;
     const midPointY = (startPointDistance.y + endPointDistance.y) / 2;
+
+    const text = distance.toFixed(2);
+    const textWidth = contextRef.current.measureText(text).width;
+    const textHeight = 14; // Altura da fonte definida anteriormente
+
+    const padding = 8; // Espaçamento entre o texto e o fundo
+    const borderRadius = 3; // Raio da borda do retângulo de fundo
+
+    // Calcular as coordenadas do retângulo de fundo
+    const rectX = midPointX - textWidth / 2 - padding;
+    const rectY = midPointY - textHeight / 2 - padding;
+    const rectWidth = textWidth + 2 * padding;
+    const rectHeight = textHeight + 2 * padding;
+
+    // Desenhar o retângulo de fundo amarelo com borda e borderRadius
+    contextRef.current.fillStyle = color || "yellow";
+    contextRef.current.strokeStyle = contrastColors[color] || "black"; // Cor da borda
+    contextRef.current.lineWidth = 2; // Largura da borda
+    contextRef.current.lineJoin = "round"; // Estilo de junção da linha para borderRadius
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(rectX + borderRadius, rectY); // Mover para o canto superior esquerdo
+    contextRef.current.lineTo(rectX + rectWidth - borderRadius, rectY); // Desenhar linha superior
+    contextRef.current.quadraticCurveTo(
+      rectX + rectWidth,
+      rectY,
+      rectX + rectWidth,
+      rectY + borderRadius
+    ); // Curva superior direita
+    contextRef.current.lineTo(
+      rectX + rectWidth,
+      rectY + rectHeight - borderRadius
+    ); // Desenhar linha direita
+    contextRef.current.quadraticCurveTo(
+      rectX + rectWidth,
+      rectY + rectHeight,
+      rectX + rectWidth - borderRadius,
+      rectY + rectHeight
+    ); // Curva inferior direita
+    contextRef.current.lineTo(rectX + borderRadius, rectY + rectHeight); // Desenhar linha inferior
+    contextRef.current.quadraticCurveTo(
+      rectX,
+      rectY + rectHeight,
+      rectX,
+      rectY + rectHeight - borderRadius
+    ); // Curva inferior esquerda
+    contextRef.current.lineTo(rectX, rectY + borderRadius); // Desenhar linha esquerda
+    contextRef.current.quadraticCurveTo(
+      rectX,
+      rectY,
+      rectX + borderRadius,
+      rectY
+    ); // Curva superior esquerda
+    contextRef.current.closePath();
+    contextRef.current.fill(); // Preencher o retângulo
+    contextRef.current.stroke(); // Desenhar a borda
+
+    // Ajustar as coordenadas de desenho vertical do texto para centralizá-lo verticalmente
+    const textX = midPointX;
+    const textY = midPointY + textHeight / 4; // Ajuste para centralizar verticalmente
+
+    // Desenhar o texto sobre o retângulo de fundo
     contextRef.current.font = "14px Arial";
-    contextRef.current.fillStyle = contrastColors[color] || "yellow";
+    contextRef.current.fillStyle = contrastColors[color] || "black";
     contextRef.current.textAlign = "center";
-    contextRef.current.fillText(distance.toFixed(2), midPointX, midPointY);
+    contextRef.current.fillText(text, textX, textY);
   };
 
   const drawMeasureLine = () => {
@@ -203,14 +264,19 @@ export default function ErgonomicAnalysis() {
     contextRef.current.stroke();
   };
 
-  const calculateDistance = () => {
+  const calculateDistance = (scaleFactor) => {
+    if (!scaleFactor) scaleFactor = 3 / 400;
+
     if (!firstPointDistance || !secondPointDistance) return 0;
 
-    const distance = Math.sqrt(
+    const distanceInPixels = Math.sqrt(
       Math.pow(secondPointDistance.x - firstPointDistance.x, 2) +
         Math.pow(secondPointDistance.y - firstPointDistance.y, 2)
     );
-    return distance;
+
+    const distanceInMeters = distanceInPixels * scaleFactor;
+
+    return distanceInMeters;
   };
 
   const startMeasuringDistance = ({ nativeEvent }) => {
@@ -284,14 +350,70 @@ export default function ErgonomicAnalysis() {
     const centroidX = (firstPoint.x + secondPoint.x + thirdPoint.x) / 3;
     const centroidY = (firstPoint.y + secondPoint.y + thirdPoint.y) / 3;
 
+    const text = angleDegrees.toFixed(2) + "°";
+    const textWidth = contextRef.current.measureText(text).width;
+    const textHeight = 14; // Altura da fonte definida anteriormente
+
+    const padding = 8; // Espaçamento entre o texto e o fundo
+    const borderRadius = 3; // Raio da borda do retângulo de fundo
+
+    // Calcular as coordenadas do retângulo de fundo
+    const rectX = centroidX - textWidth / 2 - padding;
+    const rectY = centroidY - textHeight / 2 - padding;
+    const rectWidth = textWidth + 2 * padding;
+    const rectHeight = textHeight + 2 * padding;
+
+    // Desenhar o retângulo de fundo amarelo com borda e borderRadius
+    contextRef.current.fillStyle = color || "yellow";
+    contextRef.current.strokeStyle = contrastColors[color] || "black"; // Cor da borda
+    contextRef.current.lineWidth = 2; // Largura da borda
+    contextRef.current.lineJoin = "round"; // Estilo de junção da linha para borderRadius
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(rectX + borderRadius, rectY); // Mover para o canto superior esquerdo
+    contextRef.current.lineTo(rectX + rectWidth - borderRadius, rectY); // Desenhar linha superior
+    contextRef.current.quadraticCurveTo(
+      rectX + rectWidth,
+      rectY,
+      rectX + rectWidth,
+      rectY + borderRadius
+    ); // Curva superior direita
+    contextRef.current.lineTo(
+      rectX + rectWidth,
+      rectY + rectHeight - borderRadius
+    ); // Desenhar linha direita
+    contextRef.current.quadraticCurveTo(
+      rectX + rectWidth,
+      rectY + rectHeight,
+      rectX + rectWidth - borderRadius,
+      rectY + rectHeight
+    ); // Curva inferior direita
+    contextRef.current.lineTo(rectX + borderRadius, rectY + rectHeight); // Desenhar linha inferior
+    contextRef.current.quadraticCurveTo(
+      rectX,
+      rectY + rectHeight,
+      rectX,
+      rectY + rectHeight - borderRadius
+    ); // Curva inferior esquerda
+    contextRef.current.lineTo(rectX, rectY + borderRadius); // Desenhar linha esquerda
+    contextRef.current.quadraticCurveTo(
+      rectX,
+      rectY,
+      rectX + borderRadius,
+      rectY
+    ); // Curva superior esquerda
+    contextRef.current.closePath();
+    contextRef.current.fill(); // Preencher o retângulo
+    contextRef.current.stroke(); // Desenhar a borda
+
+    // Ajustar as coordenadas de desenho vertical do texto para centralizá-lo verticalmente
+    const textX = centroidX;
+    const textY = centroidY + textHeight / 4; // Ajuste para centralizar verticalmente
+
+    // Desenhar o texto sobre o retângulo de fundo
     contextRef.current.font = "14px Arial";
-    contextRef.current.fillStyle = contrastColors[color] || "yellow";
+    contextRef.current.fillStyle = "black";
     contextRef.current.textAlign = "center";
-    contextRef.current.fillText(
-      angleDegrees.toFixed(2) + "°",
-      centroidX,
-      centroidY
-    );
+    contextRef.current.fillText(text, textX, textY);
   };
 
   const startMeasuringAngle = ({ nativeEvent }) => {

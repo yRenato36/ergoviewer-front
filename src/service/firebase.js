@@ -115,7 +115,7 @@ export const createProjectFirebase = async (uid, projectData) => {
 
     const userDocRef = doc(db, "users", uid);
     await updateDoc(userDocRef, {
-      projects: FieldValue.arrayUnion(projectDocRef),
+      projects: FieldValue().arrayUnion(projectDocRef),
     });
 
     return true;
@@ -303,6 +303,8 @@ export const downloadPdfFromStorage = async (projectId) => {
 };
 
 export const createAnalysisFirebase = async (uid, projectId, analysisData) => {
+  console.log(projectId);
+
   try {
     const analysisCollectionRef = collection(
       db,
@@ -316,7 +318,7 @@ export const createAnalysisFirebase = async (uid, projectId, analysisData) => {
 
     const projectDocRef = doc(db, "users", uid, "projects", projectId);
     await updateDoc(projectDocRef, {
-      analyses: FieldValue.arrayUnion(analysisDocRef),
+      analyses: FieldValue().arrayUnion(analysisDocRef),
     });
 
     return true;

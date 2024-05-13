@@ -31,3 +31,5 @@ export const ErgonomicAnalysisSubContainer = styled("div", {
 });
 
 export const StyledVideo = styled("video", {});
+
+export const StyledImage = styled("img", {});

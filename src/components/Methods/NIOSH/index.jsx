@@ -10,18 +10,26 @@ export const NIOSHMethodComponent = ({
   isSavedImage,
 }) => {
   const { data } = useContext(UserContext);
-
+  //Nome da Analise
   const [nameAnalysis, setNameAnalysis] = useState("");
+  //Distancia Horizontal
+  const [hDistance, setHDistance] = useState(0);
+  //Distancia Vertical
+  const [vDistance, setVDistance] = useState(0);
+  //Deslocamento Vertical
+  const [vDisplacement, setVDisplacement] = useState(0);
+  //Angulo de Torção do Tronco
+  const [tAngle, setTAngle] = useState(0);
+  //Frequencia Média de Levantamento
+  const [aFrequency, setAFrequency] = useState(0);
+  //Qualidade da Pega
+  const [quality, setQuality] = useState(0);
+  //Massa da Carga
+  const [mass, setMass] = useState(0);
+  //Resultado do NIOSH
+  const [nioshResult, setNioshResult] = useState();
 
-  const [horizontalDistance, setHorizontalDistance] = useState("");
-  const [verticalDistance, setVerticalDistance] = useState("");
-  const [verticalDisplacement, setVerticalDisplacement] = useState("");
-  const [torsionAngle, setTorsionAngle] = useState("");
-  const [averageFrequency, setAverageFrequency] = useState("");
-  const [quality, setQuality] = useState("");
-  const [mass, setMass] = useState("");
-
-  const [nioshResult, setNioshResult] = useState("");
+  const result = nioshResult || { message: "", color: "" };
 
   function calcularPLR(H, V, D, A, F, C) {
     return (
@@ -37,49 +45,52 @@ export const NIOSHMethodComponent = ({
 
   function calculateNioshResult() {
     if (
-      !horizontalDistance ||
-      !verticalDistance ||
-      !verticalDisplacement ||
-      !torsionAngle ||
-      !averageFrequency ||
-      !quality ||
-      !mass
+      !hDistance ||
+      !vDistance ||
+      !vDisplacement ||
+      !tAngle ||
+      !aFrequency ||
+      !quality
     ) {
       return;
     }
 
-    const H = parseFloat(horizontalDistance);
-    const V = parseFloat(verticalDistance);
-    const D = parseFloat(verticalDisplacement);
-    const A = parseFloat(torsionAngle);
-    const F = parseFloat(averageFrequency);
+    const H = parseFloat(hDistance);
+    const V = parseFloat(vDistance);
+    const D = parseFloat(vDisplacement);
+    const A = parseFloat(tAngle);
+    const F = parseFloat(aFrequency);
     const C = parseFloat(quality);
     const P = parseFloat(mass);
 
     const LPR = calcularPLR(H, V, D, A, F, C);
 
     let color, message;
-    if (P < LPR) {
-      color = "green";
-      message = "Bom, não há necessidade de mudar a operação.";
-    } else if (P >= LPR && P < LPR) {
+    const threshold = 0.05 * LPR;
+
+    if (P < LPR - threshold || P > LPR + threshold) {
+      if (P < LPR) {
+        color = "green";
+        message = "Bom, não há necessidade de mudar a operação.";
+      } else {
+        color = "red";
+        message =
+          "Risco para a saúde, é necessário mudar a forma de operação o mais rápido possível.";
+      }
+    } else {
       color = "yellow";
       message = "Alerta, é recomendável considerar mudar a forma de operação.";
-    } else {
-      color = "red";
-      message =
-        "Risco para a saúde, é necessário mudar a forma de operação o mais rápido possível.";
     }
 
     setNioshResult({ LPR, color, message });
   }
 
   function clearNioshResult() {
-    setHorizontalDistance("");
-    setVerticalDistance("");
-    setVerticalDisplacement("");
-    setTorsionAngle("");
-    setAverageFrequency("");
+    setHDistance("");
+    setVDistance("");
+    setVDisplacement("");
+    setTAngle("");
+    setAFrequency("");
     setQuality("");
     setMass("");
     setNioshResult(null);
@@ -89,11 +100,11 @@ export const NIOSHMethodComponent = ({
     if (
       !nioshResult ||
       !nameAnalysis ||
-      !horizontalDistance ||
-      !verticalDistance ||
-      !verticalDisplacement ||
-      !torsionAngle ||
-      !averageFrequency ||
+      !hDistance ||
+      !vDistance ||
+      !vDisplacement ||
+      !tAngle ||
+      !aFrequency ||
       !quality ||
       !mass
     ) {
@@ -104,15 +115,16 @@ export const NIOSHMethodComponent = ({
       if (!confirm) return;
     }
     await createAnalysisFirebase(data.uid, idProject, {
+      method: "NIOSH",
       name_analysis: nameAnalysis,
-      horizontal_distance: horizontalDistance,
-      vertical_distance: verticalDistance,
-      vertical_displacement: verticalDisplacement,
-      torsion_angle: torsionAngle,
-      average_frequency: averageFrequency,
+      result: nioshResult,
+      h_distance: hDistance,
+      v_distance: vDistance,
+      v_displacement: vDisplacement,
+      t_angle: tAngle,
+      a_frequency: aFrequency,
       quality: quality,
       mass: mass,
-      niosh_result: nioshResult,
     });
   }
 
@@ -132,9 +144,9 @@ export const NIOSHMethodComponent = ({
         </p>
         <span>Distância Horizontal (cm)</span>
         <p>
-          Refere-se à distância horizontal percorrida ao levantar ou movimentar
-          a carga. Este parâmetro é crucial para avaliar o esforço físico
-          envolvido na tarefa e a possibilidade de lesões musculoesqueléticas.
+          Refere-se à distância h percorrida ao levantar ou movimentar a carga.
+          Este parâmetro é crucial para avaliar o esforço físico envolvido na
+          tarefa e a possibilidade de lesões musculoesqueléticas.
         </p>
         <span>Distância Vertical (cm)</span>
         <p>
@@ -212,95 +224,60 @@ export const NIOSHMethodComponent = ({
         />
         <input
           type="number"
-          placeholder="Distância Horizontal (cm)"
-          value={horizontalDistance}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setHorizontalDistance(value);
-            }
-          }}
+          placeholder="Distância H (cm)"
+          value={hDistance}
+          onChange={(e) => setHDistance(e.target.value)}
         />
         <input
           type="number"
-          placeholder="Distância Vertical (cm)"
-          value={verticalDistance}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setVerticalDistance(value);
-            }
-          }}
+          placeholder="Distância V (cm)"
+          value={vDistance}
+          onChange={(e) => setVDistance(e.target.value)}
         />
         <input
           type="number"
-          placeholder="Deslocamento Vertical (cm)"
-          value={verticalDisplacement}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setVerticalDisplacement(value);
-            }
-          }}
+          placeholder="Deslocamento V (cm)"
+          value={vDisplacement}
+          onChange={(e) => setVDisplacement(e.target.value)}
         />
         <input
           type="number"
           placeholder="Angulo de Torção do Tronco (graus)"
-          value={torsionAngle}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setTorsionAngle(value);
-            }
-          }}
+          value={tAngle}
+          onChange={(e) => setTAngle(e.target.value)}
         />
         <input
           type="number"
           placeholder="Frequência Média de Levantamento"
-          value={averageFrequency}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setAverageFrequency(value);
-            }
-          }}
+          value={aFrequency}
+          onChange={(e) => setAFrequency(e.target.value)}
         />
         <input
           type="number"
           placeholder="Qualidade da Pega"
           value={quality}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setQuality(value);
-            }
-          }}
+          onChange={(e) => setQuality(e.target.value)}
         />
         <input
           type="number"
           placeholder="Massa da Carga"
           value={mass}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*\.?\d*$/.test(value) || value === "") {
-              setMass(value);
-            }
-          }}
+          onChange={(e) => setMass(e.target.value)}
         />
         <button onClick={calculateNioshResult}>Gerar Resultado</button>
         <button onClick={saveNioshResult}>Salvar Análise</button>
-        <input
+        <textarea
           type="text"
           placeholder="Resultado ..."
-          value={nioshResult && nioshResult.message}
+          value={result.message}
           style={
-            nioshResult && nioshResult.color
+            result.color
               ? {
                   height: "4.0625rem",
                   color: "black",
                   fontWeight: "bold",
                   overflowWrap: "break-word",
-                  backgroundColor: nioshResult.color,
+                  backgroundColor: result.color,
                   resize: "none",
                 }
               : {}

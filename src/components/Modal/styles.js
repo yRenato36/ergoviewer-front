@@ -282,6 +282,28 @@ export const ModalAnalysisContent = styled("div", {
     },
   },
 
+  textarea: {
+    resize: "none",
+
+    width: "100%",
+    height: "2.8125rem",
+
+    border: "1px solid $color04",
+    borderRadius: "0.5rem",
+
+    backgroundColor: "$white",
+
+    padding: "0.5rem",
+    boxSizing: "borderBox",
+    lineHeight: "1.5",
+
+    fontSize: "1rem",
+
+    "&:focus": {
+      borderColor: "$darkPrimary",
+    },
+  },
+
   ".small-component": {
     width: "max-content",
   },
